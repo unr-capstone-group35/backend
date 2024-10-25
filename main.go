@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 
 	"github.com/tylerolson/capstone-backend/api"
@@ -11,6 +12,9 @@ func main() {
 	mapUser := user.NewMapStore()
 	server := api.NewServer(mapUser)
 
-	http.ListenAndServe(":3000", server.Mux)
+	port := ":3000"
 
+	fmt.Printf("Running server on %s\n", port)
+
+	http.ListenAndServe(port, server.Mux)
 }

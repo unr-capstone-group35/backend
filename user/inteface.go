@@ -6,6 +6,7 @@ type User struct {
 }
 
 type Service interface {
-	Get(username string) (*User, bool)
-	Create(username string, password string) bool
+	List() ([]*User, error)
+	Get(username string) (*User, error)
+	Create(username string, password string) (*User, error)
 }

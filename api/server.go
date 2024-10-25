@@ -17,7 +17,8 @@ func NewServer(userService user.Service) *Server {
 		Mux:         http.NewServeMux(),
 	}
 
-	s.Mux.Handle("GET /users", s.HandleGetUser())
+	s.Mux.Handle("GET /users", s.handleListUsers())
+	s.Mux.Handle("POST /users", s.handleCreateUser())
 
 	return &s
 }
