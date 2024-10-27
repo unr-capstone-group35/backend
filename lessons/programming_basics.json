@@ -1,0 +1,20 @@
+{
+    "Name": "Basic Programming Concepts",
+    "Level": 1,
+    "Questions": [
+        {
+            "Name": "What is a variable?",
+            "Type": 0,
+            "Choices": [
+                "a named storage for a value",
+                "a type of function",
+                "a constant",
+                "none of the above"
+            ]
+        },
+        {
+            "Name": "A integer stores numbers with decimals",
+            "Type": 1
+        }
+    ]
+}
