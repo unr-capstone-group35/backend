@@ -1,0 +1,24 @@
+{
+    "Name": "Introduction",
+    "Questions": [
+        {
+            "Name": "What is a variable?",
+            "Type": 0,
+            "Content": {
+                "Choices": [
+                    "a named storage for a value",
+                    "a type of function",
+                    "a constant",
+                    "none of the above"
+                ]
+            }
+        },
+        {
+            "Name": "A integer stores numbers with decimals",
+            "Type": 1,
+            "Content": {
+                "Answer": 0
+            }
+        }
+    ]
+}
