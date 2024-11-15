@@ -5,31 +5,20 @@ import (
 	"net/http"
 
 	"github.com/tylerolson/capstone-backend/api"
-	"github.com/tylerolson/capstone-backend/lessons"
+	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/user"
 )
 
 func main() {
-	mapUser := user.NewMapStore()
-	lessons := lessons.NewMapStore()
+	userMapStore := user.NewMapStore()
+	coursesMapStore := course.NewMapStore()
 
-	if err := lessons.LoadPath("lessons/programming_basics.json"); err != nil {
-		fmt.Println(err)
-		return
-	}
+	// if err := coursesMapStore.LoadCourse("data/programming_basics/0.json"); err != nil {
+	// 	fmt.Println(err)
+	// 	return
+	// }
 
-	paths, _ := lessons.ListPathNames()
-
-	fmt.Println(paths)
-
-	questions, _ := lessons.ListQuestionsInPath(paths[0])
-
-	for _, question := range questions {
-		fmt.Printf("%+v\n", question)
-
-	}
-
-	server := api.NewServer(mapUser)
+	server := api.NewServer(userMapStore, coursesMapStore)
 
 	port := ":3000"
 
