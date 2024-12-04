@@ -20,7 +20,7 @@ func main() {
 
 	server := api.NewServer(userMapStore, coursesMapStore)
 
-	port := ":3000"
+	port := ":8080"
 
 	fmt.Printf("Running server on %s\n", port)
 
