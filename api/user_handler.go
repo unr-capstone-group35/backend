@@ -11,6 +11,7 @@ func (s *Server) handleListUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		users, err := s.UserService.List()
 		if err != nil {
+			fmt.Printf("Error listing users: %v\n", err)
 			http.Error(w, "Failed to list users", http.StatusInternalServerError)
 			return
 		}
@@ -37,8 +38,16 @@ func (s *Server) handleCreateUser() http.HandlerFunc {
 		// Create user
 		user, err := s.UserService.Create(request.Username, request.Password)
 		if err != nil {
-			fmt.Printf("Error creating user: %v\n", err)
-			http.Error(w, "Failed to create user", http.StatusInternalServerError)
+			// Check for specific errors
+			switch err.Error() {
+			case "username already exists":
+				http.Error(w, "Username already exists", http.StatusConflict)
+			case "email already exists":
+				http.Error(w, "Email already exists", http.StatusConflict)
+			default:
+				fmt.Printf("Error creating user: %v\n", err)
+				http.Error(w, "Failed to create user", http.StatusInternalServerError)
+			}
 			return
 		}
 
@@ -65,9 +74,10 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 			return
 		}
 
-		// Get user and validate password
-		user, err := s.UserService.Get(request.Username)
-		if err != nil || user.Password != request.Password { // USE PASSWORD HASHING FOR FINAL PRODUCT
+		// Authenticate user using the new service method
+		user, err := s.UserService.Authenticate(request.Username, request.Password)
+		if err != nil {
+			fmt.Printf("Authentication failed: %v\n", err)
 			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 			return
 		}
@@ -76,8 +86,13 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		response := UserResponse{
 			Username: user.Username,
+			Email:    user.Email,
 		}
 
-		json.NewEncoder(w).Encode(response)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			fmt.Printf("Error encoding response: %v\n", err)
+			http.Error(w, "Error encoding response", http.StatusInternalServerError)
+			return
+		}
 	}
 }
