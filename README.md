@@ -10,8 +10,8 @@
 
 2. run these commands
     - cd docker
-    - docker-compose down -v (not neccessary if you want to test with persistent data)
-    - docker-compose up -d (not neccessary if you want to test with persistent data)
+    - docker-compose down -v
+    - docker-compose up -d
     - cd ..
     - go run main.go
 
