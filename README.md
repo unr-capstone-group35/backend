@@ -20,7 +20,7 @@ Common Docker Commands
 
 Troubleshooting
 
-    If port 5432 is already in use, stop your local PostgreSQL service:
+    If port 5433 is already in use, stop your local PostgreSQL service:
 
 Mac/Linux: sudo service postgresql stop or brew services stop postgresql
 
