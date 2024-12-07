@@ -1,3 +1,4 @@
+// course/interface.go
 package course
 
 import "github.com/tylerolson/capstone-backend/lesson"

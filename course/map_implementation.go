@@ -1,3 +1,4 @@
+// course/map_implementation.go
 package course
 
 import (
@@ -7,7 +8,7 @@ import (
 )
 
 type MapStore struct {
-	courses map[string]*Course // maps are already passed by ref
+	courses map[string]*Course
 }
 
 func NewMapStore() *MapStore {

@@ -1,3 +1,4 @@
+// question/interface.go
 package question
 
 type QuestionType int

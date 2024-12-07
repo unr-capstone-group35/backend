@@ -22,11 +22,14 @@ func main() {
 
 	// Initialize services with database
 	userService := user.NewService(database)
-	coursesMapStore := course.NewMapStore()
+	coursesStore := course.NewJSONStore("./data")
+	if err := coursesStore.LoadCourseDir(); err != nil {
+		log.Fatalf("Failed to load courses: %v", err)
+	}
 	log.Printf("Successfully connected to database")
 
 	// Initialize server
-	server := api.NewServer(userService, coursesMapStore)
+	server := api.NewServer(userService, coursesStore)
 
 	port := ":8080"
 	fmt.Printf("Running server on %s\n", port)
