@@ -184,3 +184,9 @@ func (d *Database) ListUsers() ([]*User, error) {
 
 	return users, nil
 }
+
+func (d *Database) DeleteSession(token string) error {
+	query := `DELETE FROM sessions WHERE token = $1`
+	_, err := d.DB.Exec(query, token)
+	return err
+}

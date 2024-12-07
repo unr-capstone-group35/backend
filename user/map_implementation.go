@@ -5,7 +5,7 @@ import (
 )
 
 type MapStore struct {
-	data map[string]*User // maps are already passed by ref
+	data map[string]*User
 }
 
 func NewMapStore() *MapStore {

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"time"
 )
 
 func (s *Server) handleListUsers() http.HandlerFunc {
@@ -74,19 +75,21 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 			return
 		}
 
-		// Authenticate user using the new service method
-		user, err := s.UserService.Authenticate(request.Username, request.Password)
+		// Authenticate user and create session
+		user, token, expiresAt, err := s.UserService.AuthenticateAndCreateSession(request.Username, request.Password)
 		if err != nil {
 			fmt.Printf("Authentication failed: %v\n", err)
 			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
 			return
 		}
 
-		// Send response
+		// Send response with session token
 		w.Header().Set("Content-Type", "application/json")
-		response := UserResponse{
-			Username: user.Username,
-			Email:    user.Email,
+		response := SignInResponse{
+			Username:  user.Username,
+			Email:     user.Email,
+			Token:     token,
+			ExpiresAt: expiresAt.Format(time.RFC3339),
 		}
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {
@@ -94,5 +97,24 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 			http.Error(w, "Error encoding response", http.StatusInternalServerError)
 			return
 		}
+	}
+}
+
+func (s *Server) handleLogout() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.Header.Get("X-Session-Token")
+		if token == "" {
+			http.Error(w, "No session token provided", http.StatusBadRequest)
+			return
+		}
+
+		// Delete the session from database
+		err := s.UserService.DeleteSession(token)
+		if err != nil {
+			http.Error(w, "Failed to logout", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
 	}
 }

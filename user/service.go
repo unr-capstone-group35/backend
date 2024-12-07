@@ -2,7 +2,11 @@
 package user
 
 import (
+	"fmt"
+	"time"
+
 	"github.com/lib/pq"
+	"github.com/tylerolson/capstone-backend/auth"
 	"github.com/tylerolson/capstone-backend/db"
 	"golang.org/x/crypto/bcrypt"
 )
@@ -90,4 +94,44 @@ func (s *service) Authenticate(username, password string) (*User, error) {
 		Username: dbUser.Username,
 		Email:    dbUser.Email,
 	}, nil
+}
+
+func (s *service) AuthenticateAndCreateSession(username, password string) (*User, string, time.Time, error) {
+	// First authenticate the user
+	dbUser, err := s.db.GetUserByUsername(username)
+	if err != nil {
+		return nil, "", time.Time{}, err
+	}
+
+	// Check password
+	err = bcrypt.CompareHashAndPassword([]byte(dbUser.PasswordHash), []byte(password))
+	if err != nil {
+		return nil, "", time.Time{}, err
+	}
+
+	// Generate session token
+	token, expiresAt, err := auth.CreateSession()
+	if err != nil {
+		return nil, "", time.Time{}, fmt.Errorf("error creating session: %v", err)
+	}
+
+	// Store session in database
+	session := &db.Session{
+		UserID:    dbUser.ID,
+		Token:     token,
+		ExpiresAt: expiresAt.Format(time.RFC3339),
+	}
+
+	if err := s.db.CreateSession(session); err != nil {
+		return nil, "", time.Time{}, fmt.Errorf("error storing session: %v", err)
+	}
+
+	return &User{
+		Username: dbUser.Username,
+		Email:    dbUser.Email,
+	}, token, expiresAt, nil
+}
+
+func (s *service) DeleteSession(token string) error {
+	return s.db.DeleteSession(token)
 }

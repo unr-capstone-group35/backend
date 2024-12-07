@@ -1,19 +1,15 @@
 # capstone-backend
 
-**Install docker command**
+**Initial setup**
 - brew install --cask docker
-------------------------------
+- chmod +x run.sh
+---
 
 **Running the backend**
-1. run the docker application in the backround and make sure it looks like this:
-    ![alt text](image.png)
+1. run the docker application in the backround:
 
-2. run these commands
-    - cd docker
-    - docker-compose down -v
-    - docker-compose up -d
-    - cd ..
-    - go run main.go
+2. Type this command to run program
+    - ./run.sh
 
 ---
 
