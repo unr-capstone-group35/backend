@@ -1,0 +1,43 @@
+{
+    "lessonId": "time-complexity",
+    "title": "Time Complexity",
+    "description": "Understand how to analyze algorithm efficiency",
+    "exercises": [
+        {
+            "id": "tc_1",
+            "type": "matching",
+            "question": "Match the time complexity with its description:",
+            "pairs": [
+                ["O(1)", "Constant time"],
+                ["O(n)", "Linear time"],
+                ["O(n²)", "Quadratic time"],
+                ["O(log n)", "Logarithmic time"]
+            ]
+        },
+        {
+            "id": "tc_2",
+            "type": "multiple_choice",
+            "question": "What is the time complexity of searching in a sorted array using binary search?",
+            "choices": [
+                "O(log n)",
+                "O(n)",
+                "O(1)",
+                "O(n²)"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "tc_3",
+            "type": "ordering",
+            "question": "Order these time complexities from fastest to slowest:",
+            "items": [
+                "O(1)",
+                "O(log n)",
+                "O(n)",
+                "O(n log n)",
+                "O(n²)"
+            ],
+            "correctOrder": [0, 1, 2, 3, 4]
+        }
+    ]
+}

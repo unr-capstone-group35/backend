@@ -1,0 +1,36 @@
+{
+    "lessonId": "introduction",
+    "title": "Introduction",
+    "description": "Overview of data structures and their importance",
+    "exercises": [
+        {
+            "id": "ds_intro_1",
+            "type": "multiple_choice",
+            "question": "What is the main purpose of data structures?",
+            "choices": [
+                "To organize and store data efficiently",
+                "To make programs run faster",
+                "To write shorter code",
+                "To save memory space"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "ds_intro_2",
+            "type": "matching",
+            "question": "Match the data structure with its primary use case:",
+            "pairs": [
+                ["Array", "Sequential data storage"],
+                ["Stack", "Last-in-first-out operations"],
+                ["Queue", "First-in-first-out operations"],
+                ["Tree", "Hierarchical data organization"]
+            ]
+        },
+        {
+            "id": "ds_intro_3",
+            "type": "true_false",
+            "question": "Different data structures can have different time complexities for the same operation.",
+            "correctAnswer": true
+        }
+    ]
+}

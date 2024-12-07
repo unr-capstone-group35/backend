@@ -1,0 +1,42 @@
+{
+    "lessonId": "divide-conquer",
+    "title": "Divide & Conquer",
+    "description": "Learn to break down complex problems",
+    "exercises": [
+        {
+            "id": "dc_1",
+            "type": "ordering",
+            "question": "Order the steps of divide and conquer:",
+            "items": [
+                "Divide problem",
+                "Solve sub-problems",
+                "Combine solutions",
+                "Return final result"
+            ],
+            "correctOrder": [0, 1, 2, 3]
+        },
+        {
+            "id": "dc_2",
+            "type": "multiple_choice",
+            "question": "Which is NOT a divide and conquer algorithm?",
+            "choices": [
+                "Bubble Sort",
+                "Merge Sort",
+                "Quick Sort",
+                "Binary Search"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "dc_3",
+            "type": "matching",
+            "question": "Match algorithms with their divide step:",
+            "pairs": [
+                ["Merge Sort", "Split in half"],
+                ["Quick Sort", "Partition around pivot"],
+                ["Binary Search", "Check middle element"],
+                ["Strassen's", "Split matrices"]
+            ]
+        }
+    ]
+}

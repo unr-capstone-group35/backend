@@ -1,0 +1,37 @@
+{
+    "lessonId": "loops",
+    "title": "Loops",
+    "description": "Understand how to repeat actions efficiently",
+    "exercises": [
+        {
+            "id": "loop_1",
+            "type": "multiple_choice",
+            "question": "Which loop is best for a known number of iterations?",
+            "choices": [
+                "for loop",
+                "while loop",
+                "do-while loop",
+                "if statement"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "loop_2",
+            "type": "ordering",
+            "question": "Order the parts of a for loop:",
+            "items": [
+                "initialization",
+                "condition",
+                "increment",
+                "code block"
+            ],
+            "correctOrder": [0, 1, 2, 3]
+        },
+        {
+            "id": "loop_3",
+            "type": "true_false",
+            "question": "A while loop will always execute at least once.",
+            "correctAnswer": false
+        }
+    ]
+}

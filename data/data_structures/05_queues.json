@@ -1,0 +1,36 @@
+{
+    "lessonId": "queues",
+    "title": "Queues",
+    "description": "Learn about queue structures and their uses",
+    "exercises": [
+        {
+            "id": "queue_1",
+            "type": "multiple_choice",
+            "question": "What principle does a queue follow?",
+            "choices": [
+                "FIFO (First In First Out)",
+                "LIFO (Last In First Out)",
+                "Random Access",
+                "Sorted Order"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "queue_2",
+            "type": "matching",
+            "question": "Match queue terms with their descriptions:",
+            "pairs": [
+                ["enqueue", "Add to back"],
+                ["dequeue", "Remove from front"],
+                ["front", "First element"],
+                ["rear", "Last element"]
+            ]
+        },
+        {
+            "id": "queue_3",
+            "type": "true_false",
+            "question": "In a queue, elements are removed from the same end where they are added.",
+            "correctAnswer": false
+        }
+    ]
+}

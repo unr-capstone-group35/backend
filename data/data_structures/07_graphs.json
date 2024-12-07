@@ -1,0 +1,36 @@
+{
+    "lessonId": "graphs",
+    "title": "Graphs",
+    "description": "Understand graph structures and their applications",
+    "exercises": [
+        {
+            "id": "graph_1",
+            "type": "multiple_choice",
+            "question": "What are the two main components of a graph?",
+            "choices": [
+                "Vertices and Edges",
+                "Nodes and Arrays",
+                "Points and Lines",
+                "Keys and Values"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "graph_2",
+            "type": "true_false",
+            "question": "A directed graph's edges can be traversed in both directions.",
+            "correctAnswer": false
+        },
+        {
+            "id": "graph_3",
+            "type": "matching",
+            "question": "Match graph terms with their descriptions:",
+            "pairs": [
+                ["Adjacent", "Directly connected"],
+                ["Path", "Sequence of vertices"],
+                ["Cycle", "Path back to start"],
+                ["Degree", "Number of edges at vertex"]
+            ]
+        }
+    ]
+}

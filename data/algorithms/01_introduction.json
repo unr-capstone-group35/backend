@@ -1,12 +1,43 @@
 {
-    "Name": "Introduction",
-    "Questions": [
+    "lessonId": "introduction",
+    "title": "Introduction",
+    "description": "Overview of algorithms and their analysis",
+    "exercises": [
         {
-            "Name": "Dijkstra's algorithm always finds the shortest path",
-            "Type": 1,
-            "Content": {
-                "Answer": 1
-            }
+            "id": "algo_intro_1",
+            "type": "multiple_choice",
+            "question": "What is an algorithm?",
+            "choices": [
+                "A step-by-step procedure for solving a problem",
+                "A programming language",
+                "A type of data structure",
+                "A mathematical equation"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "algo_intro_2",
+            "type": "matching",
+            "question": "Match each algorithmic concept with its purpose:",
+            "pairs": [
+                ["Time Complexity", "Measure of execution speed"],
+                ["Space Complexity", "Measure of memory usage"],
+                ["Optimization", "Improving efficiency"],
+                ["Correctness", "Ensuring accurate results"]
+            ]
+        },
+        {
+            "id": "algo_intro_3",
+            "type": "ordering",
+            "question": "Order these steps in analyzing an algorithm:",
+            "items": [
+                "Understand the problem",
+                "Analyze time complexity",
+                "Analyze space complexity",
+                "Consider edge cases",
+                "Compare with alternatives"
+            ],
+            "correctOrder": [0, 1, 2, 3, 4]
         }
     ]
 }

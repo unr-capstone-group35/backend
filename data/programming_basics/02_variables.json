@@ -1,0 +1,36 @@
+{
+    "lessonId": "variables",
+    "title": "Variables",
+    "description": "Learn about storing and manipulating data",
+    "exercises": [
+        {
+            "id": "var_1",
+            "type": "multiple_choice",
+            "question": "Which of these is a valid variable name?",
+            "choices": [
+                "myVariable",
+                "123variable",
+                "my Variable",
+                "@variable"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "var_2",
+            "type": "fill_blank",
+            "question": "To store the number 42 in a variable named 'age', write: age ___ 42",
+            "correctAnswer": "="
+        },
+        {
+            "id": "var_3",
+            "type": "matching",
+            "question": "Match the data type with its example:",
+            "pairs": [
+                ["String", "\"Hello\""],
+                ["Number", "42"],
+                ["Boolean", "true"],
+                ["Array", "[1, 2, 3]"]
+            ]
+        }
+    ]
+}

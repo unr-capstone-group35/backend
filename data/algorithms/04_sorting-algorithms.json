@@ -1,0 +1,43 @@
+{
+    "lessonId": "sorting-algorithms",
+    "title": "Sorting Algorithms",
+    "description": "Learn various sorting methods and their applications",
+    "exercises": [
+        {
+            "id": "sort_1",
+            "type": "matching",
+            "question": "Match sorting algorithms with their best time complexity:",
+            "pairs": [
+                ["Bubble Sort", "O(n)"],
+                ["Merge Sort", "O(n log n)"],
+                ["Quick Sort", "O(n log n)"],
+                ["Selection Sort", "O(n²)"]
+            ]
+        },
+        {
+            "id": "sort_2",
+            "type": "multiple_choice",
+            "question": "Which sorting algorithm divides the array into sorted and unsorted portions?",
+            "choices": [
+                "Insertion Sort",
+                "Quick Sort",
+                "Merge Sort",
+                "Bubble Sort"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "sort_3",
+            "type": "ordering",
+            "question": "Order these numbers as bubble sort would sort them (first pass):",
+            "items": [
+                "5",
+                "3",
+                "2",
+                "1",
+                "4"
+            ],
+            "correctOrder": [3, 2, 1, 4, 5]
+        }
+    ]
+}

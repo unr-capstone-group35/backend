@@ -1,0 +1,38 @@
+{
+    "lessonId": "functions",
+    "title": "Functions",
+    "description": "Learn to create reusable blocks of code",
+    "exercises": [
+        {
+            "id": "func_1",
+            "type": "ordering",
+            "question": "Put these steps in order to create a function that adds two numbers:",
+            "items": [
+                "Write function keyword",
+                "Give function a name", 
+                "Add parameters in parentheses",
+                "Write code block in curly braces",
+                "Return the result"
+            ],
+            "correctOrder": [0, 1, 2, 3, 4]
+        },
+        {
+            "id": "func_2", 
+            "type": "fill_blank",
+            "question": "To create a function named 'greet', write: ___ greet() { }",
+            "correctAnswer": "function"
+        },
+        {
+            "id": "func_3",
+            "type": "multiple_choice",
+            "question": "What does a function return statement do?",
+            "choices": [
+                "Sends a value back from the function",
+                "Prints text to the screen",
+                "Creates a new variable", 
+                "Ends the program"
+            ],
+            "correctAnswer": 0
+        }
+    ]
+ }

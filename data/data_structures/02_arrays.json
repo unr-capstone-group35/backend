@@ -1,0 +1,42 @@
+{
+    "lessonId": "arrays",
+    "title": "Arrays",
+    "description": "Learn about static and dynamic arrays",
+    "exercises": [
+        {
+            "id": "arr_1",
+            "type": "multiple_choice",
+            "question": "What is the index of the first element in an array?",
+            "choices": [
+                "0",
+                "1",
+                "-1",
+                "None of the above"
+            ],
+            "correctAnswer": 0
+        },
+        {
+            "id": "arr_2",
+            "type": "true_false",
+            "question": "Arrays can store elements of different data types in the same array.",
+            "correctAnswer": true
+        },
+        {
+            "id": "arr_3",
+            "type": "fill_blank",
+            "question": "To access the third element of an array 'arr', write: arr[__]",
+            "correctAnswer": "2"
+        },
+        {
+            "id": "arr_4",
+            "type": "matching",
+            "question": "Match array operations with their descriptions:",
+            "pairs": [
+                ["push()", "Add to end"],
+                ["pop()", "Remove from end"],
+                ["shift()", "Remove from start"],
+                ["unshift()", "Add to start"]
+            ]
+        }
+    ]
+}
