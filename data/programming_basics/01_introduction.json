@@ -23,7 +23,7 @@
       },
       {
         "id": "intro_3",
-        "type": "matching",
+        "type": "matching", 
         "question": "Match the term with its definition:",
         "pairs": [
           ["Program", "A set of instructions for a computer"],
