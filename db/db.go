@@ -142,7 +142,7 @@ func (d *Database) GetSessionByToken(token string) (*Session, error) {
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, nil
+		return nil, fmt.Errorf("session not found")
 	}
 	if err != nil {
 		return nil, err
@@ -340,7 +340,7 @@ func (d *Database) GetLessonProgress(userID int, courseName, lessonID string) (*
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, nil
+		return nil, fmt.Errorf("lesson does not exist")
 	}
 	if err != nil {
 		return nil, err
