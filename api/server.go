@@ -23,12 +23,12 @@ func NewServer(userService user.Service, courseService course.Service, port stri
 		Port:          port,
 	}
 
+	// Register routes
 	s.Mux.Handle("GET /api/users", s.handleListUsers())
-
+	s.Mux.Handle("POST /api/users", s.handleCreateUser())
 	s.Mux.Handle("POST /api/signin", s.handleSignIn())
 	s.Mux.Handle("POST /api/register", s.handleCreateUser())
 	s.Mux.Handle("POST /api/logout", s.handleLogout())
-
 	s.Mux.Handle("GET /api/courses", s.handleListCourses())
 	s.Mux.Handle("GET /api/courses/{name}", s.handleGetCourse())
 
@@ -36,5 +36,18 @@ func NewServer(userService user.Service, courseService course.Service, port stri
 }
 
 func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
+	// CORS headers for all requests
+	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Session-Token")
+	w.Header().Set("Access-Control-Allow-Credentials", "true")
+
+	// Handle preflight requests
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
+	// Serve the actual request
 	s.Mux.ServeHTTP(w, r)
 }

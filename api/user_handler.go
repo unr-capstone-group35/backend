@@ -31,13 +31,13 @@ func (s *Server) handleCreateUser() http.HandlerFunc {
 		}
 
 		// Validate required fields
-		if request.Username == "" || request.Password == "" {
+		if request.Username == "" || request.Password == "" || request.Email == "" {
 			http.Error(w, "Missing required fields", http.StatusBadRequest)
 			return
 		}
 
-		// Create user
-		user, err := s.UserService.Create(request.Username, request.Username, request.Password)
+		// Create unique user with username and email
+		user, err := s.UserService.Create(request.Username, request.Email, request.Password)
 		if err != nil {
 			// Check for specific errors
 			switch err.Error() {
@@ -56,7 +56,7 @@ func (s *Server) handleCreateUser() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		response := UserResponse{
 			Username: user.Username,
-			Email:    request.Email,
+			Email:    user.Email,
 		}
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/tylerolson/capstone-backend/api"
 	"github.com/tylerolson/capstone-backend/course"
@@ -31,7 +32,16 @@ func main() {
 	// Initialize server
 	server := api.NewServer(userService, coursesStore, "8080")
 
-	port := ":8080"
-	fmt.Printf("Running server on %s\n", port)
-	http.ListenAndServe(port, server.Mux)
+	// Create an HTTP server with adjusted timeouts
+	srv := &http.Server{
+		Addr:    ":8080",
+		Handler: server,
+		// Add reasonable timeouts
+		ReadHeaderTimeout: 5 * time.Second,
+	}
+
+	fmt.Printf("Running server on %s\n", srv.Addr)
+	if err := srv.ListenAndServe(); err != nil {
+		log.Fatal(err)
+	}
 }
