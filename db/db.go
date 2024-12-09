@@ -100,8 +100,9 @@ func (d *Database) GetUserByUsername(username string) (*User, error) {
 	)
 
 	if err == sql.ErrNoRows {
-		return nil, nil
+		return nil, fmt.Errorf("user does not exist")
 	}
+
 	if err != nil {
 		return nil, err
 	}

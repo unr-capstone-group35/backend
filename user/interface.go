@@ -10,7 +10,7 @@ type User struct {
 }
 
 type Service interface {
-	Create(username, password string) (*User, error)
+	Create(username, email, password string) (*User, error)
 	List() ([]*User, error)
 	Get(username string) (*User, error)
 	Authenticate(username, password string) (*User, error)

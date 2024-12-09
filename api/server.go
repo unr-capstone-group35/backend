@@ -12,13 +12,15 @@ type Server struct {
 	Mux           *http.ServeMux
 	UserService   user.Service
 	CourseService course.Service
+	Port          string
 }
 
-func NewServer(userService user.Service, courseService course.Service) *Server {
+func NewServer(userService user.Service, courseService course.Service, port string) *Server {
 	s := &Server{
 		UserService:   userService,
 		CourseService: courseService,
 		Mux:           http.NewServeMux(),
+		Port:          port,
 	}
 
 	// Register routes
@@ -30,7 +32,7 @@ func NewServer(userService user.Service, courseService course.Service) *Server {
 func (s *Server) routes() {
 	s.Mux.HandleFunc("/api/users", func(w http.ResponseWriter, r *http.Request) {
 		// CORS headers
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:"+s.Port)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, GET, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
@@ -52,8 +54,26 @@ func (s *Server) routes() {
 	s.Mux.HandleFunc("/api/courses", s.handleListCourses())
 	s.Mux.HandleFunc("/api/courses/", s.handleGetCourse())
 
+	s.Mux.HandleFunc("/api/register", func(w http.ResponseWriter, r *http.Request) {
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:"+s.Port)
+		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
+		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
+
+		if r.Method == "OPTIONS" {
+			w.WriteHeader(http.StatusOK)
+			return
+		}
+
+		if r.Method == "POST" {
+			s.handleCreateUser()(w, r)
+			return
+		}
+
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	})
+
 	s.Mux.HandleFunc("/api/signin", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:"+s.Port)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type")
 
@@ -71,7 +91,7 @@ func (s *Server) routes() {
 	})
 
 	s.Mux.HandleFunc("/api/logout", func(w http.ResponseWriter, r *http.Request) {
-		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
+		w.Header().Set("Access-Control-Allow-Origin", "http://localhost:"+s.Port)
 		w.Header().Set("Access-Control-Allow-Methods", "POST, OPTIONS")
 		w.Header().Set("Access-Control-Allow-Headers", "Content-Type, X-Session-Token")
 

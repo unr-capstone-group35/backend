@@ -35,7 +35,7 @@ func (s *service) List() ([]*User, error) {
 	return users, nil
 }
 
-func (s *service) Create(username, password string) (*User, error) {
+func (s *service) Create(username, email, password string) (*User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
 		return nil, err
@@ -43,6 +43,7 @@ func (s *service) Create(username, password string) (*User, error) {
 
 	dbUser := &db.User{
 		Username:     username,
+		Email:        email,
 		PasswordHash: string(hashedPassword),
 	}
 
@@ -103,6 +104,8 @@ func (s *service) AuthenticateAndCreateSession(username, password string) (*User
 		return nil, "", time.Time{}, err
 	}
 
+	fmt.Println(username)
+	fmt.Println(dbUser)
 	// Check password
 	err = bcrypt.CompareHashAndPassword([]byte(dbUser.PasswordHash), []byte(password))
 	if err != nil {

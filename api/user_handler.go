@@ -37,7 +37,7 @@ func (s *Server) handleCreateUser() http.HandlerFunc {
 		}
 
 		// Create user
-		user, err := s.UserService.Create(request.Username, request.Password)
+		user, err := s.UserService.Create(request.Username, request.Username, request.Password)
 		if err != nil {
 			// Check for specific errors
 			switch err.Error() {

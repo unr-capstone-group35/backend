@@ -29,7 +29,7 @@ func main() {
 	log.Printf("Successfully connected to database")
 
 	// Initialize server
-	server := api.NewServer(userService, coursesStore)
+	server := api.NewServer(userService, coursesStore, "8080")
 
 	port := ":8080"
 	fmt.Printf("Running server on %s\n", port)
