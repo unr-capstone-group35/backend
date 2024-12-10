@@ -4,33 +4,52 @@ package api
 import (
 	"net/http"
 
+	"github.com/tylerolson/capstone-backend/auth"
 	"github.com/tylerolson/capstone-backend/course"
+	"github.com/tylerolson/capstone-backend/db"
 	"github.com/tylerolson/capstone-backend/user"
 )
 
 type Server struct {
-	Mux           *http.ServeMux
-	UserService   user.Service
-	CourseService course.Service
-	Port          string
+	Mux            *http.ServeMux
+	UserService    user.Service
+	CourseService  course.Service
+	AuthMiddleware auth.Middleware
+	DB             *db.Database
+	Port           string
 }
 
-func NewServer(userService user.Service, courseService course.Service, port string) *Server {
+func NewServer(userService user.Service, courseService course.Service, authMiddleware auth.Middleware, database *db.Database, port string) *Server {
 	s := &Server{
-		UserService:   userService,
-		CourseService: courseService,
-		Mux:           http.NewServeMux(),
-		Port:          port,
+		UserService:    userService,
+		CourseService:  courseService,
+		AuthMiddleware: authMiddleware,
+		DB:             database,
+		Mux:            http.NewServeMux(),
+		Port:           port,
 	}
 
-	// Register routes
-	s.Mux.Handle("GET /api/users", s.handleListUsers())
+	// Public routes
 	s.Mux.Handle("POST /api/users", s.handleCreateUser())
 	s.Mux.Handle("POST /api/signin", s.handleSignIn())
 	s.Mux.Handle("POST /api/register", s.handleCreateUser())
 	s.Mux.Handle("POST /api/logout", s.handleLogout())
-	s.Mux.Handle("GET /api/courses", s.handleListCourses())
-	s.Mux.Handle("GET /api/courses/{name}", s.handleGetCourse())
+
+	// Protected routes (require authentication)
+	s.Mux.Handle("GET /api/users", s.AuthMiddleware.RequireAuth(s.handleListUsers()))
+	s.Mux.Handle("GET /api/courses", s.AuthMiddleware.RequireAuth(s.handleListCourses()))
+	s.Mux.Handle("GET /api/courses/{name}", s.AuthMiddleware.RequireAuth(s.handleGetCourse()))
+	s.Mux.Handle("GET /api/courses/{name}/lessons/{lessonId}", s.AuthMiddleware.RequireAuth(s.handleGetLesson()))
+
+	// Progress tracking routes (protected)
+	s.Mux.Handle("GET /api/courses/{name}/progress",
+		s.AuthMiddleware.RequireAuth(s.handleGetCourseProgress()))
+	s.Mux.Handle("GET /api/courses/{name}/lessons/{lessonId}/progress",
+		s.AuthMiddleware.RequireAuth(s.handleGetLessonProgress()))
+	s.Mux.Handle("POST /api/courses/{name}/lessons/{lessonId}/progress",
+		s.AuthMiddleware.RequireAuth(s.handleUpdateLessonProgress()))
+	s.Mux.Handle("POST /api/courses/{name}/lessons/{lessonId}/exercises/{exerciseId}/attempt",
+		s.AuthMiddleware.RequireAuth(s.handleExerciseAttempt()))
 
 	return s
 }

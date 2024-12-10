@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/tylerolson/capstone-backend/api"
+	"github.com/tylerolson/capstone-backend/auth"
 	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/db"
 	"github.com/tylerolson/capstone-backend/user"
@@ -23,20 +24,30 @@ func main() {
 
 	// Initialize services with database
 	userService := user.NewService(database)
-	coursesStore := course.NewJSONStore("./data")
+
+	// Initialize auth middleware
+	authMiddleware := auth.NewMiddleware(database)
+
+	// Initialize course store with database
+	coursesStore := course.NewJSONStore("./data", database)
 	if err := coursesStore.LoadCourseDir(); err != nil {
 		log.Fatalf("Failed to load courses: %v", err)
 	}
 	log.Printf("Successfully connected to database")
 
-	// Initialize server
-	server := api.NewServer(userService, coursesStore, "8080")
+	// Initialize server with all required dependencies
+	server := api.NewServer(
+		userService,
+		coursesStore,
+		authMiddleware,
+		database,
+		"8080",
+	)
 
 	// Create an HTTP server with adjusted timeouts
 	srv := &http.Server{
-		Addr:    ":8080",
-		Handler: server,
-		// Add reasonable timeouts
+		Addr:              ":8080",
+		Handler:           server,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
 

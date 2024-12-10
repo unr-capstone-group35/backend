@@ -1,3 +1,4 @@
+// api/lessons_handler.go
 package api
 
 import (
@@ -6,44 +7,63 @@ import (
 	"net/http"
 )
 
-type NameRequest struct {
-	Name string `json:"name,omitempty"`
-}
-
 func (s *Server) handleListCourses() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		paths, err := s.CourseService.ListCourseNames()
 		if err != nil {
-			w.WriteHeader(http.StatusInternalServerError)
-		}
-
-		w.Header().Set("Content-Type", "application/json")
-
-		if err := json.NewEncoder(w).Encode(paths); err != nil {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
+			http.Error(w, "Failed to list courses", http.StatusInternalServerError)
 			return
 		}
 
-		fmt.Println("Returned list of paths")
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(paths); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
 	}
 }
 
 func (s *Server) handleGetCourse() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		name := r.PathValue("id")
+		name := r.PathValue("name")
+		if name == "" {
+			http.Error(w, "Course name is required", http.StatusBadRequest)
+			return
+		}
 
-		path, err := s.CourseService.GetCourseByName(name)
+		course, err := s.CourseService.GetCourseByName(name)
 		if err != nil {
-			w.WriteHeader(http.StatusBadRequest)
+			http.Error(w, fmt.Sprintf("Failed to get course: %v", err), http.StatusNotFound)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(course); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
+	}
+}
 
-		if err := json.NewEncoder(w).Encode(path); err != nil {
-			fmt.Println(err)
-			w.WriteHeader(http.StatusInternalServerError)
+func (s *Server) handleGetLesson() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		courseName := r.PathValue("name")
+		lessonId := r.PathValue("lessonId")
+
+		if courseName == "" || lessonId == "" {
+			http.Error(w, "Course name and lesson ID are required", http.StatusBadRequest)
+			return
+		}
+
+		lesson, err := s.CourseService.GetLessonByID(courseName, lessonId)
+		if err != nil {
+			http.Error(w, "Lesson not found", http.StatusNotFound)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(lesson); err != nil {
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
 	}
