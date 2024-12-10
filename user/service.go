@@ -122,7 +122,7 @@ func (s *service) AuthenticateAndCreateSession(username, password string) (*User
 	session := &db.Session{
 		UserID:    dbUser.ID,
 		Token:     token,
-		ExpiresAt: expiresAt.Format(time.RFC3339),
+		ExpiresAt: expiresAt, // Use time.Time directly instead of formatting as string
 	}
 
 	if err := s.db.CreateSession(session); err != nil {

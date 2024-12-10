@@ -77,9 +77,8 @@ func (m *middleware) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// Check if session is expired
-		expiresAt, err := time.Parse(time.RFC3339, session.ExpiresAt)
-		if err != nil || time.Now().After(expiresAt) {
+		// Check if session is expired - no need to parse since it's already time.Time
+		if time.Now().After(session.ExpiresAt) {
 			http.Error(w, "Session expired", http.StatusUnauthorized)
 			return
 		}

@@ -4,8 +4,10 @@ package course
 import (
 	"encoding/json"
 	"errors"
+	"log"
 	"os"
 	"path/filepath"
+	"strings"
 	"time"
 
 	"github.com/tylerolson/capstone-backend/db"
@@ -137,7 +139,7 @@ func (j *JSONStore) GetLessonProgress(userID int, courseName, lessonID string) (
 				CourseName: courseName,
 				LessonID:   lessonID,
 				Status:     "not_started",
-				StartedAt:  time.Now().Format(time.RFC3339),
+				StartedAt:  time.Now(),
 			}, nil
 		}
 		return nil, err
@@ -177,13 +179,17 @@ func (j *JSONStore) VerifyExerciseAnswer(courseName, lessonID, exerciseID string
 		if choiceIdx, ok := answer.(float64); ok {
 			correctAnswer, ok := targetExercise.CorrectAnswer.(float64)
 			if !ok {
+				log.Printf("Invalid correct answer format for multiple choice. Expected float64, got %T", targetExercise.CorrectAnswer)
 				return false, errors.New("invalid correct answer format for multiple choice")
 			}
 			return choiceIdx == correctAnswer, nil
 		}
+		log.Printf("Invalid answer format for multiple choice. Expected float64, got %T", answer)
 		return false, errors.New("invalid answer format for multiple choice")
+
 	case "true_false":
 		if boolAnswer, ok := answer.(bool); ok {
+			log.Printf("True/False verification - Answer: %v, Correct: %v", boolAnswer, targetExercise.CorrectAnswer)
 			return boolAnswer == targetExercise.CorrectAnswer.(bool), nil
 		}
 		return false, errors.New("invalid answer format for true/false")
@@ -191,6 +197,7 @@ func (j *JSONStore) VerifyExerciseAnswer(courseName, lessonID, exerciseID string
 	case "matching":
 		answerPairs, ok := answer.([]interface{})
 		if !ok {
+			log.Printf("Invalid answer format for matching. Got type: %T", answer)
 			return false, errors.New("invalid answer format for matching")
 		}
 		return verifyMatchingAnswer(answerPairs, targetExercise.Pairs)
@@ -202,6 +209,20 @@ func (j *JSONStore) VerifyExerciseAnswer(courseName, lessonID, exerciseID string
 		}
 		return verifyOrderingAnswer(answerOrder, targetExercise.CorrectOrder)
 
+	case "fill_blank":
+		userAnswer, ok := answer.(string)
+		if !ok {
+			log.Printf("Invalid answer format for fill_blank. Got type: %T", answer)
+			return false, errors.New("invalid answer format for fill blank")
+		}
+		correctAnswer, ok := targetExercise.CorrectAnswer.(string)
+		if !ok {
+			log.Printf("Invalid correct answer format for fill_blank. Expected string, got %T", targetExercise.CorrectAnswer)
+			return false, errors.New("invalid correct answer format for fill blank")
+		}
+		// Case-insensitive comparison
+		return strings.EqualFold(strings.TrimSpace(userAnswer), strings.TrimSpace(correctAnswer)), nil
+
 	default:
 		return false, errors.New("unsupported exercise type")
 	}
@@ -209,26 +230,41 @@ func (j *JSONStore) VerifyExerciseAnswer(courseName, lessonID, exerciseID string
 
 // Helper functions for exercise verification
 func verifyMatchingAnswer(answer []interface{}, correctPairs [][]string) (bool, error) {
+	log.Printf("Verifying matching answer. Got: %v, Expected: %v", answer, correctPairs)
+
 	if len(answer) != len(correctPairs) {
+		log.Printf("Length mismatch. Answer length: %d, Expected length: %d", len(answer), len(correctPairs))
 		return false, nil
 	}
 
-	for i, pair := range answer {
+	// Convert answer pairs to a map for easier verification
+	answerMap := make(map[string]string)
+	for _, pair := range answer {
 		answerPair, ok := pair.([]interface{})
 		if !ok || len(answerPair) != 2 {
+			log.Printf("Invalid pair format: %v", pair)
 			return false, errors.New("invalid matching pair format")
 		}
 
-		left, ok1 := answerPair[0].(string)
-		right, ok2 := answerPair[1].(string)
+		term, ok1 := answerPair[0].(string)
+		definition, ok2 := answerPair[1].(string)
 		if !ok1 || !ok2 {
+			log.Printf("Invalid pair values: %v", answerPair)
 			return false, errors.New("invalid matching pair values")
 		}
 
-		if left != correctPairs[i][0] || right != correctPairs[i][1] {
+		answerMap[term] = definition
+	}
+
+	// Check each correct pair
+	for _, pair := range correctPairs {
+		if answerMap[pair[0]] != pair[1] {
+			log.Printf("Mismatch found. Term: %s, Expected: %s, Got: %s",
+				pair[0], pair[1], answerMap[pair[0]])
 			return false, nil
 		}
 	}
+
 	return true, nil
 }
 

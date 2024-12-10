@@ -36,7 +36,7 @@ CREATE TRIGGER update_user_updated_at
 CREATE TABLE IF NOT EXISTS user_course_progress (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    course_name VARCHAR(100) NOT NULL,  -- References course name from JSON
+    course_name VARCHAR(100) NOT NULL,  
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_accessed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP WITH TIME ZONE,
@@ -61,9 +61,9 @@ CREATE TABLE IF NOT EXISTS user_exercise_attempts (
     user_id INTEGER REFERENCES users(id),
     course_name VARCHAR(100) NOT NULL,
     lesson_id VARCHAR(100) NOT NULL,
-    exercise_id VARCHAR(100) NOT NULL,  -- References exercise ID from JSON
+    exercise_id VARCHAR(100) NOT NULL,
     attempt_number INTEGER NOT NULL,
-    answer JSON NOT NULL,  -- Stores user's answer in JSON format to handle different exercise types
+    answer TEXT NOT NULL,
     is_correct BOOLEAN NOT NULL,
     attempted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, course_name, lesson_id, exercise_id, attempt_number)

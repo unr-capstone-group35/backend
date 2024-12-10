@@ -61,5 +61,6 @@ const (
 	ExerciseTypeMultipleChoice = "multiple_choice"
 	ExerciseTypeMatching       = "matching"
 	ExerciseTypeOrdering       = "ordering"
-	ExerciseTrueFalse          = "true_false"
+	ExerciseTypeTrueFalse      = "true_false"
+	ExerciseTypeFillBlank      = "fill_blank"
 )
