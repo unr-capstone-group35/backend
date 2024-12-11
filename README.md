@@ -29,4 +29,4 @@ Mac/Linux: sudo service postgresql stop or brew services stop postgresql
 
 **Database Diagram**
 
-![db diagram](db_diagram.png)
+![db diagram](db_diagram.svg)
