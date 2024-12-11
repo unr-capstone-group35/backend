@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/joho/godotenv"
 	_ "github.com/lib/pq"
@@ -35,6 +36,10 @@ func NewDatabase() (*Database, error) {
 	if err != nil {
 		return nil, fmt.Errorf("error opening database: %v", err)
 	}
+
+	db.SetConnMaxIdleTime(10 * time.Second)
+	db.SetConnMaxLifetime(30 * time.Second)
+	db.SetMaxIdleConns(0)
 
 	// Test the connection
 	if err := db.Ping(); err != nil {

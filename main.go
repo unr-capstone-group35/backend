@@ -5,6 +5,9 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"os"
+	"os/signal"
+	"syscall"
 	"time"
 
 	"github.com/tylerolson/capstone-backend/api"
@@ -50,6 +53,24 @@ func main() {
 		Handler:           server,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
+
+	go func() {
+		sigChan := make(chan os.Signal, 1)
+		signal.Notify(sigChan, syscall.SIGINT, syscall.SIGTERM)
+		<-sigChan
+
+		if err := database.Close(); err != nil {
+			log.Fatalf("DB close error: %v", err)
+		} else {
+			fmt.Println("Closed database")
+		}
+
+		if err := srv.Close(); err != nil {
+			log.Fatalf("HTTP close error: %v", err)
+		} else {
+			fmt.Println("Closed server")
+		}
+	}()
 
 	fmt.Printf("Running server on %s\n", srv.Addr)
 	if err := srv.ListenAndServe(); err != nil {
