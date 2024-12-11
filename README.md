@@ -1,15 +1,18 @@
 # capstone-backend
 
 **Initial setup**
+
 - brew install --cask docker
 - chmod +x run.sh
+
 ---
 
 **Running the backend**
+
 1. run the docker application in the backround:
 
 2. Type this command to run program
-    - ./run.sh
+   - ./run.sh
 
 ---
 
@@ -24,4 +27,6 @@ Troubleshooting
 
 Mac/Linux: sudo service postgresql stop or brew services stop postgresql
 
+**Database Diagram**
 
+![db diagram](db_diagram.png)
