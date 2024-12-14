@@ -3,13 +3,11 @@ package course
 
 import "github.com/tylerolson/capstone-backend/db"
 
-// Course represents a complete course with its lessons
 type Course struct {
 	Name    string   `json:"Name"`
 	Lessons []Lesson `json:"Lessons"`
 }
 
-// Lesson represents a single lesson within a course
 type Lesson struct {
 	LessonID    string     `json:"lessonId"`
 	Title       string     `json:"title"`
@@ -17,7 +15,6 @@ type Lesson struct {
 	Exercises   []Exercise `json:"exercises"`
 }
 
-// Exercise represents a learning exercise within a lesson
 type Exercise struct {
 	ID            string      `json:"id"`
 	Type          string      `json:"type"`
@@ -29,7 +26,6 @@ type Exercise struct {
 	CorrectOrder  []int       `json:"correctOrder,omitempty"`
 }
 
-// Service defines the interface for course-related operations
 type Service interface {
 	// Course Management
 	ListCourseNames() ([]string, error)

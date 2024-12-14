@@ -89,7 +89,6 @@ func (j *JSONStore) loadCourseFromDir(courseName string) error {
 	return nil
 }
 
-// Implement Service interface methods
 func (j *JSONStore) ListCourseNames() ([]string, error) {
 	names := make([]string, 0, len(j.courses))
 	for name := range j.courses {

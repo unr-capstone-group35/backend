@@ -188,7 +188,7 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 			CourseName: courseName,
 			LessonID:   lessonId,
 			ExerciseID: exerciseId,
-			Answer:     string(answerJSON), // Store as JSON string
+			Answer:     string(answerJSON),
 		}
 
 		// Verify answer and record attempt

@@ -61,12 +61,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Session-Token")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
-	// Handle preflight requests
+	// Preflight requests
 	if r.Method == "OPTIONS" {
 		w.WriteHeader(http.StatusOK)
 		return
 	}
 
-	// Serve the actual request
+	// Serve actual request
 	s.Mux.ServeHTTP(w, r)
 }

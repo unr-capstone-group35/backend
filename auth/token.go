@@ -11,15 +11,14 @@ import (
 	"github.com/tylerolson/capstone-backend/db"
 )
 
-// Define custom type for context keys to avoid collisions
+// Custom type for context keys to avoid collisions
 type contextKey string
 
 const (
-	TokenLength    = 32 // 256 bits
+	TokenLength    = 32
 	TokenLifetime  = 24 * time.Hour
 	TokenHeaderKey = "X-Session-Token"
 
-	// Define context key for user ID
 	userIDKey contextKey = "userID"
 )
 
@@ -77,7 +76,7 @@ func (m *middleware) RequireAuth(next http.HandlerFunc) http.HandlerFunc {
 			return
 		}
 
-		// Check if session is expired - no need to parse since it's already time.Time
+		// Check if session is expired
 		if time.Now().After(session.ExpiresAt) {
 			http.Error(w, "Session expired", http.StatusUnauthorized)
 			return
