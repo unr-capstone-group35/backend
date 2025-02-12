@@ -1,10 +1,8 @@
-// db/database.go
 package db
 
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -19,7 +17,7 @@ type Database struct {
 func NewDatabase() (*Database, error) {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
-		log.Printf("Warning: .env file not found")
+		panic(".env file not found")
 	}
 
 	// Get database connection details from environment variables
@@ -28,8 +26,7 @@ func NewDatabase() (*Database, error) {
 	dbName := os.Getenv("POSTGRES_DB")
 
 	// Create connection string
-	connStr := fmt.Sprintf("postgres://%s:%s@localhost:5433/%s?sslmode=disable",
-		dbUser, dbPassword, dbName)
+	connStr := fmt.Sprintf("postgres://%s:%s@localhost:5433/%s?sslmode=disable", dbUser, dbPassword, dbName)
 
 	// Open database connection
 	db, err := sql.Open("postgres", connStr)

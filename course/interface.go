@@ -1,11 +1,10 @@
-// course/interface.go
 package course
 
 import "github.com/tylerolson/capstone-backend/db"
 
 type Course struct {
-	Name    string   `json:"Name"`
-	Lessons []Lesson `json:"Lessons"`
+	Name    string   `json:"name"`
+	Lessons []Lesson `json:"lessons"`
 }
 
 type Lesson struct {

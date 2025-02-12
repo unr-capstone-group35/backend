@@ -1,4 +1,3 @@
-// db/user_repository.go
 package db
 
 import (
@@ -12,8 +11,7 @@ func (d *Database) CreateUser(user *User) error {
 		VALUES ($1, $2, $3)
 		RETURNING id, created_at, updated_at`
 
-	return d.DB.QueryRow(query, user.Username, user.Email, user.PasswordHash).Scan(
-		&user.ID, &user.CreatedAt, &user.UpdatedAt)
+	return d.DB.QueryRow(query, user.Username, user.Email, user.PasswordHash).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
 }
 
 func (d *Database) GetUserByUsername(username string) (*User, error) {
@@ -23,14 +21,13 @@ func (d *Database) GetUserByUsername(username string) (*User, error) {
 		FROM users
 		WHERE username = $1`
 
-	err := d.DB.QueryRow(query, username).Scan(
-		&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CreatedAt, &user.UpdatedAt)
-
-	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("user does not exist")
-	}
+	err := d.DB.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CreatedAt, &user.UpdatedAt)
 
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("user does not exist")
+		}
+
 		return nil, err
 	}
 
@@ -50,12 +47,14 @@ func (d *Database) ListUsers() ([]*User, error) {
 	defer rows.Close()
 
 	var users []*User
+	//users := make([]*User, 0)
 	for rows.Next() {
 		user := &User{}
 		err := rows.Scan(&user.ID, &user.Username, &user.Email, &user.CreatedAt, &user.UpdatedAt)
 		if err != nil {
 			return nil, err
 		}
+
 		users = append(users, user)
 	}
 

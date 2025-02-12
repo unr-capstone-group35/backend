@@ -1,10 +1,7 @@
-// api/lessons_handler.go
 package api
 
 import (
 	"encoding/json"
-	"fmt"
-	"log"
 	"net/http"
 )
 
@@ -27,30 +24,29 @@ func (s *Server) handleListCourses() http.HandlerFunc {
 func (s *Server) handleGetCourse() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		name := r.PathValue("name")
-		log.Printf("Received request for course: %s", name)
+		s.logger.Debug("Received request for course", "name", name)
 
 		if name == "" {
-			log.Println("Course name is empty")
 			http.Error(w, "Course name is required", http.StatusBadRequest)
 			return
 		}
 
 		course, err := s.CourseService.GetCourseByName(name)
 		if err != nil {
-			log.Printf("Error fetching course by name %s: %v", name, err)
-			http.Error(w, fmt.Sprintf("Failed to get course: %v", err), http.StatusNotFound)
+			s.logger.Warn("Error fetching course by name", "name", name, "error", err)
+			http.Error(w, "Failed to get course", http.StatusNotFound)
 			return
 		}
 
-		log.Printf("Course found: %+v", course)
+		s.logger.Debug("Course found", "course", course)
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(course); err != nil {
-			log.Printf("Error encoding response for course %s: %v", name, err)
+			s.logger.Error("Error encoding response for course", "name", name, "error", err)
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
 
-		log.Printf("Response successfully sent for course: %s", name)
+		s.logger.Debug("Response successfully sent for course", "name", name)
 	}
 }
 
@@ -59,6 +55,7 @@ func (s *Server) handleGetLesson() http.HandlerFunc {
 		courseName := r.PathValue("name")
 		lessonId := r.PathValue("lessonId")
 
+		s.logger.Debug("Recieved get lesson request", "courseName", courseName, "lessonId", lessonId)
 		if courseName == "" || lessonId == "" {
 			http.Error(w, "Course name and lesson ID are required", http.StatusBadRequest)
 			return
@@ -66,12 +63,14 @@ func (s *Server) handleGetLesson() http.HandlerFunc {
 
 		lesson, err := s.CourseService.GetLessonByID(courseName, lessonId)
 		if err != nil {
+			s.logger.Debug("Lesson not found", "courseName", courseName, "lessonId", lessonId)
 			http.Error(w, "Lesson not found", http.StatusNotFound)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(lesson); err != nil {
+			s.logger.Error("Failed to encode get lesson response", "error", err)
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
