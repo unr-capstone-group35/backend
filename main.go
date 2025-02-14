@@ -22,6 +22,8 @@ func main() {
 		Level: slog.LevelDebug,
 	}))
 
+	logger.Debug("Could not decode create user request")
+
 	// Initialize database connection
 	database, err := db.NewDatabase()
 	if err != nil {

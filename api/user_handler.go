@@ -15,7 +15,7 @@ type CreateUserRequest struct {
 	Password string `json:"password"`
 }
 
-type UserResponse struct {
+type CreateUserResponse struct {
 	Username string `json:"username"`
 	Email    string `json:"email"`
 }
@@ -55,6 +55,8 @@ func (s *Server) handleCreateUser() http.HandlerFunc {
 			return
 		}
 
+		s.logger.Debug("Got create user request", "request", request)
+
 		// Validate required fields
 		if request.Username == "" || request.Password == "" || request.Email == "" {
 			s.logger.Debug("Missing required user fields")
@@ -65,7 +67,7 @@ func (s *Server) handleCreateUser() http.HandlerFunc {
 		// Create unique user with username and email
 		user, err := s.UserService.Create(request.Username, request.Email, request.Password)
 		if err != nil {
-			if errors.Is(err, User.ErrEmailTaken) {
+			if errors.Is(err, User.ErrUsernameTaken) {
 				s.logger.Debug("Username already exists", "error", err)
 				http.Error(w, "Username already exists", http.StatusConflict)
 			} else if errors.Is(err, User.ErrEmailTaken) {
@@ -79,9 +81,10 @@ func (s *Server) handleCreateUser() http.HandlerFunc {
 			return
 		}
 
+		s.logger.Debug("Created user", "username", request.Username, "email", request.Email, "password", request.Password)
 		// Send response
 		w.Header().Set("Content-Type", "application/json")
-		response := UserResponse{
+		response := CreateUserResponse{
 			Username: user.Username,
 			Email:    user.Email,
 		}

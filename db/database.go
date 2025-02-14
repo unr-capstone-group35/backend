@@ -34,15 +34,23 @@ func NewDatabase() (*Database, error) {
 		return nil, fmt.Errorf("error opening database: %v", err)
 	}
 
-	db.SetConnMaxIdleTime(10 * time.Second)
-	db.SetConnMaxLifetime(30 * time.Second)
-	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetConnMaxLifetime(30 * time.Minute)
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(5)
 
 	// Test the connection
-	if err := db.Ping(); err != nil {
+	for i := 0; i < 10; i++ {
+		err = db.Ping()
+		if err == nil {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+	if err != nil {
+		db.Close()
 		return nil, fmt.Errorf("error connecting to database: %v", err)
 	}
-
 	return &Database{DB: db}, nil
 }
 

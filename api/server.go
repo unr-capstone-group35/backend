@@ -56,6 +56,12 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Session-Token")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
+	// need this or nuxt screams???
+	if r.Method == "OPTIONS" {
+		w.WriteHeader(http.StatusOK)
+		return
+	}
+
 	// Serve actual request
 	s.Mux.ServeHTTP(w, r)
 }
