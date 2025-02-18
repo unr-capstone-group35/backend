@@ -1,4 +1,3 @@
-// course/json_implementation.go
 package course
 
 import (
@@ -94,6 +93,7 @@ func (j *JSONStore) ListCourseNames() ([]string, error) {
 	for name := range j.courses {
 		names = append(names, name)
 	}
+
 	return names, nil
 }
 
@@ -102,6 +102,7 @@ func (j *JSONStore) GetCourseByName(name string) (*Course, error) {
 	if !ok {
 		return nil, errors.New("course not found")
 	}
+
 	return course, nil
 }
 
@@ -181,8 +182,10 @@ func (j *JSONStore) VerifyExerciseAnswer(courseName, lessonID, exerciseID string
 				log.Printf("Invalid correct answer format for multiple choice. Expected float64, got %T", targetExercise.CorrectAnswer)
 				return false, errors.New("invalid correct answer format for multiple choice")
 			}
+
 			return choiceIdx == correctAnswer, nil
 		}
+
 		log.Printf("Invalid answer format for multiple choice. Expected float64, got %T", answer)
 		return false, errors.New("invalid answer format for multiple choice")
 

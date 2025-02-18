@@ -1,4 +1,3 @@
-// user/service.go
 package user
 
 import (
@@ -32,6 +31,7 @@ func (s *service) List() ([]*User, error) {
 			Email:    dbUser.Email,
 		}
 	}
+
 	return users, nil
 }
 
@@ -104,8 +104,6 @@ func (s *service) AuthenticateAndCreateSession(username, password string) (*User
 		return nil, "", time.Time{}, err
 	}
 
-	fmt.Println(username)
-	fmt.Println(dbUser)
 	// Check password
 	err = bcrypt.CompareHashAndPassword([]byte(dbUser.PasswordHash), []byte(password))
 	if err != nil {

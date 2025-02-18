@@ -1,9 +1,8 @@
-// main.go
 package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 	"os/signal"
@@ -11,45 +10,51 @@ import (
 	"time"
 
 	"github.com/tylerolson/capstone-backend/api"
-	"github.com/tylerolson/capstone-backend/auth"
 	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/db"
 	"github.com/tylerolson/capstone-backend/user"
 )
 
+const PORT = "8080"
+
 func main() {
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		Level: slog.LevelDebug,
+	}))
+
+	logger.Debug("Could not decode create user request")
+
 	// Initialize database connection
 	database, err := db.NewDatabase()
 	if err != nil {
-		log.Fatalf("Failed to connect to database: %v", err)
+		logger.Error("Failed to connect to database", "error", err)
+		os.Exit(1)
 	}
 	defer database.Close()
 
 	// Initialize services with database
 	userService := user.NewService(database)
 
-	// Initialize auth middleware
-	authMiddleware := auth.NewMiddleware(database)
-
 	// Initialize course store with database
 	coursesStore := course.NewJSONStore("./data", database)
 	if err := coursesStore.LoadCourseDir(); err != nil {
-		log.Fatalf("Failed to load courses: %v", err)
+		logger.Error("Failed to load courses", "error", err)
+		os.Exit(1)
 	}
-	log.Printf("Successfully connected to database")
+
+	logger.Info("Successfully connected to database")
 
 	// Initialize server with all required dependencies
 	server := api.NewServer(
 		userService,
 		coursesStore,
-		authMiddleware,
 		database,
-		"8080",
+		logger,
 	)
 
 	// Create an HTTP server with adjusted timeouts
 	srv := &http.Server{
-		Addr:              ":8080",
+		Addr:              fmt.Sprintf(":%v", PORT),
 		Handler:           server,
 		ReadHeaderTimeout: 5 * time.Second,
 	}
@@ -60,20 +65,23 @@ func main() {
 		<-sigChan
 
 		if err := database.Close(); err != nil {
-			log.Fatalf("DB close error: %v", err)
+			logger.Error("DB close error", "error", err)
+			os.Exit(1)
 		} else {
-			fmt.Println("Closed database")
+			logger.Info("Closed database")
 		}
 
 		if err := srv.Close(); err != nil {
-			log.Fatalf("HTTP close error: %v", err)
+			logger.Error("HTTP close error", "error", err)
+			os.Exit(1)
 		} else {
-			fmt.Println("Closed server")
+			logger.Info("Closed server")
 		}
 	}()
 
-	fmt.Printf("Running server on %s\n", srv.Addr)
+	logger.Info("Started server", "address", srv.Addr)
 	if err := srv.ListenAndServe(); err != nil {
-		log.Fatal(err)
+		logger.Error("Listen error", "error", err)
+		os.Exit(1)
 	}
 }

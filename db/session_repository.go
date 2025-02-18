@@ -1,4 +1,3 @@
-// db/session_repository.go
 package db
 
 import (
@@ -12,8 +11,7 @@ func (d *Database) CreateSession(session *Session) error {
 		VALUES ($1, $2, $3)
 		RETURNING id, created_at`
 
-	return d.DB.QueryRow(
-		query, session.UserID, session.Token, session.ExpiresAt).Scan(&session.ID, &session.CreatedAt)
+	return d.DB.QueryRow(query, session.UserID, session.Token, session.ExpiresAt).Scan(&session.ID, &session.CreatedAt)
 }
 
 func (d *Database) GetSessionByToken(token string) (*Session, error) {
@@ -23,13 +21,13 @@ func (d *Database) GetSessionByToken(token string) (*Session, error) {
 		FROM sessions
 		WHERE token = $1`
 
-	err := d.DB.QueryRow(query, token).Scan(
-		&session.ID, &session.UserID, &session.Token, &session.ExpiresAt, &session.CreatedAt)
+	err := d.DB.QueryRow(query, token).Scan(&session.ID, &session.UserID, &session.Token, &session.ExpiresAt, &session.CreatedAt)
 
-	if err == sql.ErrNoRows {
-		return nil, fmt.Errorf("session not found")
-	}
 	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, fmt.Errorf("session not found")
+		}
+
 		return nil, err
 	}
 
@@ -39,5 +37,6 @@ func (d *Database) GetSessionByToken(token string) (*Session, error) {
 func (d *Database) DeleteSession(token string) error {
 	query := `DELETE FROM sessions WHERE token = $1`
 	_, err := d.DB.Exec(query, token)
+
 	return err
 }

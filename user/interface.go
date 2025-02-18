@@ -1,7 +1,14 @@
-// user/interface.go
 package user
 
-import "time"
+import (
+	"errors"
+	"time"
+)
+
+var (
+	ErrUsernameTaken = errors.New("username already exists")
+	ErrEmailTaken    = errors.New("email already exists")
+)
 
 type User struct {
 	Username string `json:"username,omitempty"`

@@ -1,10 +1,8 @@
-// db/database.go
 package db
 
 import (
 	"database/sql"
 	"fmt"
-	"log"
 	"os"
 	"time"
 
@@ -19,7 +17,7 @@ type Database struct {
 func NewDatabase() (*Database, error) {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
-		log.Printf("Warning: .env file not found")
+		panic(".env file not found")
 	}
 
 	// Get database connection details from environment variables
@@ -28,8 +26,7 @@ func NewDatabase() (*Database, error) {
 	dbName := os.Getenv("POSTGRES_DB")
 
 	// Create connection string
-	connStr := fmt.Sprintf("postgres://%s:%s@localhost:5433/%s?sslmode=disable",
-		dbUser, dbPassword, dbName)
+	connStr := fmt.Sprintf("postgres://%s:%s@localhost:5433/%s?sslmode=disable", dbUser, dbPassword, dbName)
 
 	// Open database connection
 	db, err := sql.Open("postgres", connStr)
@@ -37,15 +34,23 @@ func NewDatabase() (*Database, error) {
 		return nil, fmt.Errorf("error opening database: %v", err)
 	}
 
-	db.SetConnMaxIdleTime(10 * time.Second)
-	db.SetConnMaxLifetime(30 * time.Second)
-	db.SetMaxIdleConns(0)
+	db.SetConnMaxLifetime(5 * time.Minute)
+	db.SetConnMaxLifetime(30 * time.Minute)
+	db.SetMaxOpenConns(25)
+	db.SetMaxIdleConns(5)
 
 	// Test the connection
-	if err := db.Ping(); err != nil {
+	for i := 0; i < 10; i++ {
+		err = db.Ping()
+		if err == nil {
+			break
+		}
+		time.Sleep(1 * time.Second)
+	}
+	if err != nil {
+		db.Close()
 		return nil, fmt.Errorf("error connecting to database: %v", err)
 	}
-
 	return &Database{DB: db}, nil
 }
 

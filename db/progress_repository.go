@@ -1,4 +1,3 @@
-// db/progress_repository.go
 package db
 
 import (

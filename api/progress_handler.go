@@ -1,4 +1,3 @@
-// api/progress_handler.go
 package api
 
 import (
@@ -153,7 +152,7 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req ExerciseAttemptRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			log.Printf("Error decoding request body: %v", err)
+			s.logger.Warn("Error decoding request body", "error", err)
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
@@ -162,8 +161,7 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 		lessonId := r.PathValue("lessonId")
 		exerciseId := r.PathValue("exerciseId")
 
-		log.Printf("Received exercise attempt - Course: %s, Lesson: %s, Exercise: %s, Answer: %v",
-			courseName, lessonId, exerciseId, req.Answer)
+		s.logger.Debug("Received exercise attempt", "course", courseName, "lessonId", lessonId, "exerciseId", exerciseId, "answer", req.Answer)
 
 		if courseName == "" || lessonId == "" || exerciseId == "" {
 			http.Error(w, "Course name, lesson ID, and exercise ID are required", http.StatusBadRequest)
