@@ -10,44 +10,44 @@ type User struct {
 	Username     string    `json:"username"`
 	Email        string    `json:"email"`
 	PasswordHash string    `json:"-"` // "-" means this won't be included in JSON
-	CreatedAt    time.Time `json:"created_at"`
-	UpdatedAt    time.Time `json:"updated_at"`
+	CreatedAt    time.Time `json:"createdAt"`
+	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
 type Session struct {
 	ID        int       `json:"id"`
-	UserID    int       `json:"user_id"`
+	UserID    int       `json:"userID"`
 	Token     string    `json:"token"`
-	ExpiresAt time.Time `json:"expires_at"`
-	CreatedAt time.Time `json:"created_at"`
+	ExpiresAt time.Time `json:"expiresAt"`
+	CreatedAt time.Time `json:"createdAt"`
 }
 
 type CourseProgress struct {
 	ID             int        `json:"id"`
-	UserID         int        `json:"user_id"`
-	CourseName     string     `json:"course_name"`
-	StartedAt      time.Time  `json:"started_at"`
-	LastAccessedAt time.Time  `json:"last_accessed_at"`
-	CompletedAt    *time.Time `json:"completed_at,omitempty"`
+	UserID         int        `json:"userID"`
+	CourseName     string     `json:"courseName"`
+	StartedAt      time.Time  `json:"startedAt"`
+	LastAccessedAt time.Time  `json:"lastAccessedAt"`
+	CompletedAt    *time.Time `json:"completedAt,omitempty"`
 }
 
 type LessonProgress struct {
 	ID          int        `json:"id"`
-	UserID      int        `json:"user_id"`
-	CourseName  string     `json:"course_name"`
-	LessonID    string     `json:"lesson_id"`
+	UserID      int        `json:"userID"`
+	CourseName  string     `json:"courseName"`
+	LessonID    string     `json:"lessonID"`
 	Status      string     `json:"status"`
-	StartedAt   time.Time  `json:"started_at"`
-	CompletedAt *time.Time `json:"completed_at,omitempty"`
+	StartedAt   time.Time  `json:"startedAt"`
+	CompletedAt *time.Time `json:"completedAt,omitempty"`
 }
 
 type ExerciseAttempt struct {
 	ID            int       `json:"id"`
-	UserID        int       `json:"user_id"`
-	CourseName    string    `json:"course_name"`
-	LessonID      string    `json:"lesson_id"`
-	ExerciseID    string    `json:"exercise_id"`
-	AttemptNumber int       `json:"attempt_number"`
+	UserID        int       `json:"userID"`
+	CourseName    string    `json:"courseName"`
+	LessonID      string    `json:"lessonID"`
+	ExerciseID    string    `json:"exerciseID"`
+	AttemptNumber int       `json:"attemptNumber"`
 	Answer        string    `json:"answer"`
 	IsCorrect     bool      `json:"is_correct"`
 	AttemptedAt   time.Time `json:"attempted_at"`

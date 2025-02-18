@@ -3,18 +3,31 @@ package api
 import (
 	"encoding/json"
 	"net/http"
+
+	"github.com/tylerolson/capstone-backend/course"
 )
+
+type GetCourseResponse struct {
+	Course course.Course `json:"course"`
+}
+
+type ListCoursesResponse struct {
+	CourseNames []string `json:"courseNames"`
+}
 
 func (s *Server) handleListCourses() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		paths, err := s.CourseService.ListCourseNames()
+		names, err := s.CourseService.ListCourseNames()
 		if err != nil {
 			http.Error(w, "Failed to list courses", http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(paths); err != nil {
+		response := &ListCoursesResponse{
+			CourseNames: names,
+		}
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
@@ -40,7 +53,10 @@ func (s *Server) handleGetCourse() http.HandlerFunc {
 
 		s.logger.Debug("Course found", "course", course)
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(course); err != nil {
+		response := &GetCourseResponse{
+			*course,
+		}
+		if err := json.NewEncoder(w).Encode(response); err != nil {
 			s.logger.Error("Error encoding response for course", "name", name, "error", err)
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
