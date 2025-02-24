@@ -138,7 +138,7 @@ func (j *JSONStore) GetLessonProgress(userID int, courseID, lessonID string) (*d
 				UserID:    userID,
 				CourseID:  courseID,
 				LessonID:  lessonID,
-				Status:    "not_started",
+				Status:    db.StatusNotStarted,
 				StartedAt: time.Now(),
 			}, nil
 		}
@@ -147,7 +147,7 @@ func (j *JSONStore) GetLessonProgress(userID int, courseID, lessonID string) (*d
 	return progress, nil
 }
 
-func (j *JSONStore) UpdateLessonProgress(userID int, courseID, lessonID, status string) error {
+func (j *JSONStore) UpdateLessonProgress(userID int, courseID string, lessonID string, status db.Status) error {
 	return j.db.UpdateLessonProgress(userID, courseID, lessonID, status)
 }
 
@@ -175,7 +175,7 @@ func (j *JSONStore) VerifyExerciseAnswer(courseID, lessonID, exerciseID string, 
 	}
 
 	switch targetExercise.Type {
-	case "multiple_choice":
+	case ExerciseTypeMultipleChoice:
 		if choiceIdx, ok := answer.(float64); ok {
 			correctAnswer, ok := targetExercise.CorrectAnswer.(float64)
 			if !ok {
@@ -189,14 +189,14 @@ func (j *JSONStore) VerifyExerciseAnswer(courseID, lessonID, exerciseID string, 
 		log.Printf("Invalid answer format for multiple choice. Expected float64, got %T", answer)
 		return false, errors.New("invalid answer format for multiple choice")
 
-	case "true_false":
+	case ExerciseTypeTrueFalse:
 		if boolAnswer, ok := answer.(bool); ok {
 			log.Printf("True/False verification - Answer: %v, Correct: %v", boolAnswer, targetExercise.CorrectAnswer)
 			return boolAnswer == targetExercise.CorrectAnswer.(bool), nil
 		}
 		return false, errors.New("invalid answer format for true/false")
 
-	case "matching":
+	case ExerciseTypeMatching:
 		answerPairs, ok := answer.([]interface{})
 		if !ok {
 			log.Printf("Invalid answer format for matching. Got type: %T", answer)
@@ -204,14 +204,14 @@ func (j *JSONStore) VerifyExerciseAnswer(courseID, lessonID, exerciseID string, 
 		}
 		return verifyMatchingAnswer(answerPairs, targetExercise.Pairs)
 
-	case "ordering":
+	case ExerciseTypeOrdering:
 		answerOrder, ok := answer.([]interface{})
 		if !ok {
 			return false, errors.New("invalid answer format for ordering")
 		}
 		return verifyOrderingAnswer(answerOrder, targetExercise.CorrectOrder)
 
-	case "fill_blank":
+	case ExerciseTypeFillBlank:
 		userAnswer, ok := answer.(string)
 		if !ok {
 			log.Printf("Invalid answer format for fill_blank. Got type: %T", answer)

@@ -2,6 +2,17 @@ package course
 
 import "github.com/tylerolson/capstone-backend/db"
 
+// Constants for exercise types
+type ExerciseType string
+
+const (
+	ExerciseTypeMultipleChoice ExerciseType = "multiple_choice"
+	ExerciseTypeMatching       ExerciseType = "matching"
+	ExerciseTypeOrdering       ExerciseType = "ordering"
+	ExerciseTypeTrueFalse      ExerciseType = "true_false"
+	ExerciseTypeFillBlank      ExerciseType = "fill_blank"
+)
+
 type Course struct {
 	ID      string   `json:"id"`
 	Name    string   `json:"name"`
@@ -16,14 +27,14 @@ type Lesson struct {
 }
 
 type Exercise struct {
-	ID            string      `json:"id"`
-	Type          string      `json:"type"`
-	Question      string      `json:"question"`
-	Choices       []string    `json:"choices,omitempty"`
-	CorrectAnswer interface{} `json:"correctAnswer,omitempty"`
-	Pairs         [][]string  `json:"pairs,omitempty"`
-	Items         []string    `json:"items,omitempty"`
-	CorrectOrder  []int       `json:"correctOrder,omitempty"`
+	ID            string       `json:"id"`
+	Type          ExerciseType `json:"type"`
+	Question      string       `json:"question"`
+	Choices       []string     `json:"choices,omitempty"`
+	CorrectAnswer interface{}  `json:"correctAnswer,omitempty"`
+	Pairs         [][]string   `json:"pairs,omitempty"`
+	Items         []string     `json:"items,omitempty"`
+	CorrectOrder  []int        `json:"correctOrder,omitempty"`
 }
 
 type Service interface {
@@ -35,7 +46,7 @@ type Service interface {
 	// Progress Tracking
 	GetCourseProgress(userID int, courseID string) (*db.CourseProgress, error)
 	GetLessonProgress(userID int, courseID string, lessonID string) (*db.LessonProgress, error)
-	UpdateLessonProgress(userID int, courseID string, lessonID string, status string) error
+	UpdateLessonProgress(userID int, courseID string, lessonID string, status db.Status) error
 
 	// Exercise Management
 	VerifyExerciseAnswer(courseID, lessonID, exerciseID string, answer interface{}) (bool, error)
@@ -44,19 +55,3 @@ type Service interface {
 	LoadCourse(filename string) error
 	LoadCourseDir() error
 }
-
-// Constants for status values
-const (
-	StatusNotStarted = "not_started"
-	StatusInProgress = "in_progress"
-	StatusCompleted  = "completed"
-)
-
-// Constants for exercise types
-const (
-	ExerciseTypeMultipleChoice = "multiple_choice"
-	ExerciseTypeMatching       = "matching"
-	ExerciseTypeOrdering       = "ordering"
-	ExerciseTypeTrueFalse      = "true_false"
-	ExerciseTypeFillBlank      = "fill_blank"
-)

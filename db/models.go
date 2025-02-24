@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+type Status string
+
+const (
+	StatusNotStarted Status = "not_started"
+	StatusInProgress Status = "in_progress"
+	StatusCompleted  Status = "completed"
+)
+
 type User struct {
 	ID           int       `json:"id"`
 	Username     string    `json:"username"`
@@ -36,7 +44,7 @@ type LessonProgress struct {
 	UserID      int        `json:"userId"`
 	CourseID    string     `json:"courseId"`
 	LessonID    string     `json:"lessonId"`
-	Status      string     `json:"status"`
+	Status      Status     `json:"status"`
 	StartedAt   time.Time  `json:"startedAt"`
 	CompletedAt *time.Time `json:"completed_at,omitempty"`
 }
@@ -68,7 +76,7 @@ type dbLessonProgress struct {
 	UserID      int
 	CourseID    string
 	LessonID    string
-	Status      string
+	Status      Status
 	StartedAt   time.Time
 	CompletedAt sql.NullTime
 }

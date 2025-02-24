@@ -12,7 +12,7 @@ import (
 )
 
 type UpdateProgressRequest struct {
-	Status string `json:"status"`
+	Status db.Status `json:"status"`
 }
 
 type ExerciseAttemptRequest struct {

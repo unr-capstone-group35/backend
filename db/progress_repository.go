@@ -57,7 +57,7 @@ func (d *Database) GetOrCreateCourseProgress(userID int, courseID string) (*Cour
 	return dbProgress.toCourseProgress(), nil
 }
 
-func (d *Database) UpdateLessonProgress(userID int, courseID, lessonID, status string) error {
+func (d *Database) UpdateLessonProgress(userID int, courseID string, lessonID string, status Status) error {
 	query := `
 		INSERT INTO user_lesson_progress (user_id, course_id, lesson_id, status)
 		VALUES ($1, $2, $3, $4)
