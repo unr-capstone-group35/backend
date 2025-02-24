@@ -161,7 +161,7 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		var req ExerciseAttemptRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
-			log.Printf("Error decoding request body: %v", err)
+			s.logger.Warn("Error decoding request body", "error", err)
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
@@ -170,8 +170,7 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 		lessonID := r.PathValue("lessonID")
 		exerciseID := r.PathValue("exerciseID")
 
-		log.Printf("Received exercise attempt - Course: %s, Lesson: %s, Exercise: %s, Answer: %v",
-			courseID, lessonID, exerciseID, req.Answer)
+		s.logger.Debug("Received exercise attempt", "courseID", courseID, "lessonID", lessonID, "exerciseID", exerciseID, "answer", req.Answer)
 
 		if courseID == "" || lessonID == "" || exerciseID == "" {
 			http.Error(w, "Course ID, lesson ID, and exercise ID are required", http.StatusBadRequest)
