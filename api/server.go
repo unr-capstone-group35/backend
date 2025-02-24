@@ -30,10 +30,10 @@ func NewServer(userService user.Service, courseService course.Service, database 
 	// Public routes
 	s.Mux.Handle("POST /api/signin", s.handleSignIn())
 	s.Mux.Handle("POST /api/register", s.handleCreateUser())
-	s.Mux.Handle("POST /api/logout", s.handleLogout())
 
 	// Protected routes (require authentication)
 	dbAuth := auth.DbAuthMiddleware(s.DB)
+	s.Mux.Handle("POST /api/logout", dbAuth(s.handleLogout()))
 	s.Mux.Handle("GET /api/users", dbAuth(s.handleListUsers()))
 	s.Mux.Handle("GET /api/courses", dbAuth(s.handleListCourses()))
 	s.Mux.Handle("GET /api/courses/{courseID}", dbAuth(s.handleGetCourse()))
@@ -52,7 +52,7 @@ func (s *Server) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// CORS headers for all requests
 	w.Header().Set("Access-Control-Allow-Origin", "http://localhost:3000")
 	w.Header().Set("Access-Control-Allow-Methods", "GET, POST, PUT, DELETE, OPTIONS")
-	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization, X-Session-Token")
+	w.Header().Set("Access-Control-Allow-Headers", "Content-Type, Authorization")
 	w.Header().Set("Access-Control-Allow-Credentials", "true")
 
 	// need this or nuxt screams???

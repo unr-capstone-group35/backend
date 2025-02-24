@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"time"
 
+	"github.com/tylerolson/capstone-backend/auth"
 	User "github.com/tylerolson/capstone-backend/user"
 )
 
@@ -133,8 +134,9 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 
 func (s *Server) handleLogout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("X-Session-Token")
-		if len(token) == 0 {
+		token, ok := auth.GetToken(r.Context())
+
+		if !ok {
 			s.logger.Debug("No token provided in logout")
 			http.Error(w, "No session token provided", http.StatusBadRequest)
 			return
