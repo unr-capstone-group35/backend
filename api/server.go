@@ -28,7 +28,6 @@ func NewServer(userService user.Service, courseService course.Service, database 
 	}
 
 	// Public routes
-	s.Mux.Handle("POST /api/users", s.handleCreateUser())
 	s.Mux.Handle("POST /api/signin", s.handleSignIn())
 	s.Mux.Handle("POST /api/register", s.handleCreateUser())
 	s.Mux.Handle("POST /api/logout", s.handleLogout())

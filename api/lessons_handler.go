@@ -7,14 +7,14 @@ import (
 
 func (s *Server) handleListCourses() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		paths, err := s.CourseService.ListCourseNames()
+		names, err := s.CourseService.ListCourseNames()
 		if err != nil {
 			http.Error(w, "Failed to list courses", http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(paths); err != nil {
+		if err := json.NewEncoder(w).Encode(names); err != nil {
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
@@ -38,7 +38,7 @@ func (s *Server) handleGetCourse() http.HandlerFunc {
 			return
 		}
 
-		s.logger.Debug("Course found", "course", course)
+		s.logger.Debug("Course found", "course", course.Name)
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(course); err != nil {
 			s.logger.Error("Error encoding response for course", "name", name, "error", err)
