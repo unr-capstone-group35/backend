@@ -14,9 +14,10 @@ const (
 )
 
 type Course struct {
-	ID      string   `json:"id"`
-	Name    string   `json:"name"`
-	Lessons []Lesson `json:"lessons"`
+	ID          string   `json:"id"`
+	Name        string   `json:"name"`
+	Description string   `json:"description"`
+	Lessons     []Lesson `json:"lessons"`
 }
 
 type Lesson struct {
@@ -39,7 +40,7 @@ type Exercise struct {
 
 type Service interface {
 	// Course Management
-	ListCourseNames() ([]string, error)
+	ListCourses() ([]*Course, error)
 	GetCourseByID(courseID string) (*Course, error)
 	GetLessonByID(courseID, lessonID string) (*Lesson, error)
 

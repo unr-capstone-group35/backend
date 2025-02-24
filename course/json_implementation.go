@@ -88,13 +88,13 @@ func (j *JSONStore) loadCourseFromDir(courseID string) error {
 	return nil
 }
 
-func (j *JSONStore) ListCourseNames() ([]string, error) {
-	names := make([]string, 0, len(j.courses))
-	for name := range j.courses {
-		names = append(names, name)
+func (j *JSONStore) ListCourses() ([]*Course, error) {
+	courses := make([]*Course, 0)
+	for _, course := range j.courses {
+		courses = append(courses, course)
 	}
 
-	return names, nil
+	return courses, nil
 }
 
 func (j *JSONStore) GetCourseByID(courseID string) (*Course, error) {

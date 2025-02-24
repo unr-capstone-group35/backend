@@ -5,17 +5,42 @@ import (
 	"net/http"
 )
 
+type CourseInfo struct {
+	ID           string `json:"id"`
+	Name         string `json:"name"`
+	Description  string `json:"description"`
+	LessonAmount int    `json:"lessonAmount"`
+}
+
+type ListCoursesResponse []CourseInfo
+
+// GET /api/courses
 func (s *Server) handleListCourses() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		names, err := s.CourseService.ListCourseNames()
+		s.logger.Debug("Got list course request")
+
+		courses, err := s.CourseService.ListCourses()
 		if err != nil {
+			s.logger.Warn("Failed to list courses", "err", err)
 			http.Error(w, "Failed to list courses", http.StatusInternalServerError)
 			return
 		}
 
+		response := make([]CourseInfo, 0)
+
+		for _, course := range courses {
+			response = append(response, CourseInfo{
+				ID:           course.ID,
+				Name:         course.Name,
+				Description:  course.Description,
+				LessonAmount: len(course.Lessons),
+			})
+		}
+
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(names); err != nil {
-			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			s.logger.Error("Failed to encode response", "err", err)
+			http.Error(w, "Failed to encode response:", http.StatusInternalServerError)
 			return
 		}
 	}
