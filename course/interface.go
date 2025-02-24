@@ -3,8 +3,8 @@ package course
 import "github.com/tylerolson/capstone-backend/db"
 
 type Course struct {
-	Name    string   `json:"name"`
-	Lessons []Lesson `json:"lessons"`
+	Name    string   `json:"Name"`
+	Lessons []Lesson `json:"Lessons"`
 }
 
 type Lesson struct {
