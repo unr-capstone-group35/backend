@@ -21,91 +21,93 @@ type ExerciseAttemptRequest struct {
 
 func (s *Server) handleGetCourseProgress() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		log.Printf("Starting handleGetCourseProgress")
+		s.logger.Debug("Recieved GET CourseProgress")
 
-		courseName := r.PathValue("name")
-		log.Printf("Course name from request: %s", courseName)
+		courseID := r.PathValue("courseID")
+		s.logger.Debug("Course ID from request", "courseID", courseID)
 
-		if courseName == "" {
-			log.Printf("Error: Course name is empty")
-			http.Error(w, "Course name is required", http.StatusBadRequest)
+		if courseID == "" {
+			s.logger.Warn("Error: Course ID is empty")
+			http.Error(w, "Course ID is required", http.StatusBadRequest)
 			return
 		}
 
-		userId, ok := auth.GetUserID(r.Context())
-		log.Printf("User ID from context: %d, ok: %v", userId, ok)
+		userID, ok := auth.GetUserID(r.Context())
+		s.logger.Debug("User ID from context", "userID", userID, "ok", ok)
 
 		if !ok {
-			log.Printf("Error: User not found in context")
+			s.logger.Warn("Error: User not found in context")
 			http.Error(w, "User not found in context", http.StatusUnauthorized)
 			return
 		}
 
 		// Check if course exists
-		_, err := s.CourseService.GetCourseByName(courseName)
+		_, err := s.CourseService.GetCourseByID(courseID)
 		if err != nil {
-			log.Printf("Error verifying course existence: %v", err)
+			s.logger.Warn("Error verifying course existence", "error", err)
 			http.Error(w, "Course not found", http.StatusNotFound)
 			return
 		}
-		log.Printf("Course verification successful")
+		s.logger.Debug("Course verification successful")
 
 		// Get or create progress
-		progress, err := s.CourseService.GetCourseProgress(userId, courseName)
+		progress, err := s.CourseService.GetCourseProgress(userID, courseID)
 		if err != nil {
-			log.Printf("Error getting course progress: %v", err)
+			s.logger.Warn("Error getting course progress", "error", err)
 
 			if err.Error() == "record not found" {
-				log.Printf("Creating new progress record for user %d, course %s", userId, courseName)
+				s.logger.Debug("Creating new progress record", "userID", userID, "courseID", courseID)
 				now := time.Now()
 				progress = &db.CourseProgress{
-					UserID:         userId,
-					CourseName:     courseName,
+					UserID:         userID,
+					CourseID:       courseID,
 					StartedAt:      now,
 					LastAccessedAt: now,
 				}
 			} else {
-				log.Printf("Database error getting course progress: %v", err)
+				s.logger.Warn("Database error getting course progress", "error", err)
 				http.Error(w, "Failed to get course progress", http.StatusInternalServerError)
 				return
 			}
 		}
 
-		log.Printf("Sending progress response: %+v", progress)
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(progress); err != nil {
-			log.Printf("Error encoding progress response: %v", err)
+			s.logger.Error("Error encoding progress response", "error", err)
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
-		log.Printf("Successfully completed handleGetCourseProgress")
 	}
 }
 
 func (s *Server) handleGetLessonProgress() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		courseName := r.PathValue("name")
-		lessonId := r.PathValue("lessonId")
+		courseID := r.PathValue("courseID")
+		lessonID := r.PathValue("lessonID")
 
-		if courseName == "" || lessonId == "" {
-			http.Error(w, "Course name and lesson ID are required", http.StatusBadRequest)
+		s.logger.Debug("Got GET lesson progress", "courseID", courseID, "lessonID", lessonID)
+		if courseID == "" || lessonID == "" {
+			http.Error(w, "Course ID and lesson ID are required", http.StatusBadRequest)
 			return
 		}
 
-		userId, ok := auth.GetUserID(r.Context())
+		userID, ok := auth.GetUserID(r.Context())
 		if !ok {
+			s.logger.Warn("User not found in context")
 			http.Error(w, "User not found in context", http.StatusUnauthorized)
 			return
 		}
 
-		progress, err := s.CourseService.GetLessonProgress(userId, courseName, lessonId)
+		progress, err := s.CourseService.GetLessonProgress(userID, courseID, lessonID)
 		if err != nil {
+			s.logger.Warn("Failed to get lesson progress", "error", err)
 			http.Error(w, fmt.Sprintf("Failed to get lesson progress: %v", err), http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(progress); err != nil {
+			s.logger.Error("Failed to encode response", "error", err)
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
@@ -114,32 +116,39 @@ func (s *Server) handleGetLessonProgress() http.HandlerFunc {
 
 func (s *Server) handleUpdateLessonProgress() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
+		courseID := r.PathValue("courseID")
+		lessonID := r.PathValue("lessonID")
+
+		s.logger.Debug("Got POST update lesson progress", "courseID", courseID, "lessonID", lessonID)
+
 		var req UpdateProgressRequest
 		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			s.logger.Warn("Invalid request body")
 			http.Error(w, "Invalid request body", http.StatusBadRequest)
 			return
 		}
 
 		if req.Status == "" {
+			s.logger.Warn("Status is required")
 			http.Error(w, "Status is required", http.StatusBadRequest)
 			return
 		}
 
-		courseName := r.PathValue("name")
-		lessonId := r.PathValue("lessonId")
-
-		if courseName == "" || lessonId == "" {
-			http.Error(w, "Course name and lesson ID are required", http.StatusBadRequest)
+		if courseID == "" || lessonID == "" {
+			s.logger.Warn("Course ID and lesson ID are required")
+			http.Error(w, "Course ID and lesson ID are required", http.StatusBadRequest)
 			return
 		}
 
-		userId, ok := auth.GetUserID(r.Context())
+		userID, ok := auth.GetUserID(r.Context())
 		if !ok {
+			s.logger.Warn("User not found in context")
 			http.Error(w, "User not found in context", http.StatusUnauthorized)
 			return
 		}
 
-		if err := s.CourseService.UpdateLessonProgress(userId, courseName, lessonId, req.Status); err != nil {
+		if err := s.CourseService.UpdateLessonProgress(userID, courseID, lessonID, req.Status); err != nil {
+			s.logger.Error("Failed to update lesson progress", "error", err)
 			http.Error(w, fmt.Sprintf("Failed to update lesson progress: %v", err), http.StatusInternalServerError)
 			return
 		}
@@ -157,19 +166,19 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 			return
 		}
 
-		courseName := r.PathValue("name")
-		lessonId := r.PathValue("lessonId")
-		exerciseId := r.PathValue("exerciseId")
+		courseID := r.PathValue("courseID")
+		lessonID := r.PathValue("lessonID")
+		exerciseID := r.PathValue("exerciseID")
 
 		log.Printf("Received exercise attempt - Course: %s, Lesson: %s, Exercise: %s, Answer: %v",
-			courseName, lessonId, exerciseId, req.Answer)
+			courseID, lessonID, exerciseID, req.Answer)
 
-		if courseName == "" || lessonId == "" || exerciseId == "" {
-			http.Error(w, "Course name, lesson ID, and exercise ID are required", http.StatusBadRequest)
+		if courseID == "" || lessonID == "" || exerciseID == "" {
+			http.Error(w, "Course ID, lesson ID, and exercise ID are required", http.StatusBadRequest)
 			return
 		}
 
-		userId, ok := auth.GetUserID(r.Context())
+		userID, ok := auth.GetUserID(r.Context())
 		if !ok {
 			http.Error(w, "User not found in context", http.StatusUnauthorized)
 			return
@@ -183,15 +192,15 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 		}
 
 		attempt := &db.ExerciseAttempt{
-			UserID:     userId,
-			CourseName: courseName,
-			LessonID:   lessonId,
-			ExerciseID: exerciseId,
+			UserID:     userID,
+			CourseID:   courseID,
+			LessonID:   lessonID,
+			ExerciseID: exerciseID,
 			Answer:     string(answerJSON),
 		}
 
 		// Verify answer and record attempt
-		isCorrect, err := s.CourseService.VerifyExerciseAnswer(courseName, lessonId, exerciseId, req.Answer)
+		isCorrect, err := s.CourseService.VerifyExerciseAnswer(courseID, lessonID, exerciseID, req.Answer)
 		if err != nil {
 			http.Error(w, fmt.Sprintf("Failed to verify exercise answer: %v", err), http.StatusInternalServerError)
 			return

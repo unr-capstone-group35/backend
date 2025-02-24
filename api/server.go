@@ -36,14 +36,14 @@ func NewServer(userService user.Service, courseService course.Service, database 
 	dbAuth := auth.DbAuthMiddleware(s.DB)
 	s.Mux.Handle("GET /api/users", dbAuth(s.handleListUsers()))
 	s.Mux.Handle("GET /api/courses", dbAuth(s.handleListCourses()))
-	s.Mux.Handle("GET /api/courses/{name}", dbAuth(s.handleGetCourse()))
-	s.Mux.Handle("GET /api/courses/{name}/lessons/{lessonId}", dbAuth(s.handleGetLesson()))
+	s.Mux.Handle("GET /api/courses/{courseID}", dbAuth(s.handleGetCourse()))
+	s.Mux.Handle("GET /api/courses/{courseID}/lessons/{lessonID}", dbAuth(s.handleGetLesson()))
 
 	// Progress tracking routes (protected)
-	s.Mux.Handle("GET /api/courses/{name}/progress", dbAuth(s.handleGetCourseProgress()))
-	s.Mux.Handle("GET /api/courses/{name}/lessons/{lessonId}/progress", dbAuth(s.handleGetLessonProgress()))
-	s.Mux.Handle("POST /api/courses/{name}/lessons/{lessonId}/progress", dbAuth(s.handleUpdateLessonProgress()))
-	s.Mux.Handle("POST /api/courses/{name}/lessons/{lessonId}/exercises/{exerciseId}/attempt", dbAuth(s.handleExerciseAttempt()))
+	s.Mux.Handle("GET /api/courses/{courseID}/progress", dbAuth(s.handleGetCourseProgress()))
+	s.Mux.Handle("GET /api/courses/{courseID}/lessons/{lessonID}/progress", dbAuth(s.handleGetLessonProgress()))
+	s.Mux.Handle("POST /api/courses/{courseID}/lessons/{lessonID}/progress", dbAuth(s.handleUpdateLessonProgress()))
+	s.Mux.Handle("POST /api/courses/{courseID}/lessons/{lessonID}/exercises/{exerciseID}/attempt", dbAuth(s.handleExerciseAttempt()))
 
 	return s
 }

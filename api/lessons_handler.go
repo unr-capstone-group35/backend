@@ -23,17 +23,17 @@ func (s *Server) handleListCourses() http.HandlerFunc {
 
 func (s *Server) handleGetCourse() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		name := r.PathValue("name")
-		s.logger.Debug("Received request for course", "name", name)
+		courseID := r.PathValue("courseID")
+		s.logger.Debug("Received request for course", "courseID", courseID)
 
-		if name == "" {
-			http.Error(w, "Course name is required", http.StatusBadRequest)
+		if courseID == "" {
+			http.Error(w, "Course ID is required", http.StatusBadRequest)
 			return
 		}
 
-		course, err := s.CourseService.GetCourseByName(name)
+		course, err := s.CourseService.GetCourseByID(courseID)
 		if err != nil {
-			s.logger.Warn("Error fetching course by name", "name", name, "error", err)
+			s.logger.Warn("Error fetching course by courseID", "courseID", courseID, "error", err)
 			http.Error(w, "Failed to get course", http.StatusNotFound)
 			return
 		}
@@ -41,29 +41,29 @@ func (s *Server) handleGetCourse() http.HandlerFunc {
 		s.logger.Debug("Course found", "course", course.Name)
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(course); err != nil {
-			s.logger.Error("Error encoding response for course", "name", name, "error", err)
+			s.logger.Error("Error encoding response for course", "courseID", courseID, "error", err)
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
 		}
 
-		s.logger.Debug("Response successfully sent for course", "name", name)
+		s.logger.Debug("Response successfully sent for course", "courseID", courseID)
 	}
 }
 
 func (s *Server) handleGetLesson() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		courseName := r.PathValue("name")
-		lessonId := r.PathValue("lessonId")
+		courseID := r.PathValue("courseID")
+		lessonID := r.PathValue("lessonID")
 
-		s.logger.Debug("Recieved get lesson request", "courseName", courseName, "lessonId", lessonId)
-		if courseName == "" || lessonId == "" {
-			http.Error(w, "Course name and lesson ID are required", http.StatusBadRequest)
+		s.logger.Debug("Recieved get lesson request", "courseID", courseID, "lessonID", lessonID)
+		if courseID == "" || lessonID == "" {
+			http.Error(w, "Course ID and lesson ID are required", http.StatusBadRequest)
 			return
 		}
 
-		lesson, err := s.CourseService.GetLessonByID(courseName, lessonId)
+		lesson, err := s.CourseService.GetLessonByID(courseID, lessonID)
 		if err != nil {
-			s.logger.Debug("Lesson not found", "courseName", courseName, "lessonId", lessonId)
+			s.logger.Debug("Lesson not found", "courseID", courseID, "lessonID", lessonID)
 			http.Error(w, "Lesson not found", http.StatusNotFound)
 			return
 		}

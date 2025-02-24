@@ -1,54 +1,54 @@
 {
-    "lessonId": "introduction",
-    "title": "Introduction to Programming",
-    "description": "Get started with basic programming concepts",
-    "exercises": [
-      {
-        "id": "intro_1",
-        "type": "multiple_choice",
-        "question": "What is programming?",
-        "choices": [
-          "Writing instructions for computers",
-          "Building computer hardware",
-          "Installing software",
-          "Using social media"
-        ],
-        "correctAnswer": 0
-      },
-      {
-        "id": "intro_2",
-        "type": "true_false",
-        "question": "Programming languages are used to communicate with computers.",
-        "correctAnswer": true
-      },
-      {
-        "id": "intro_3",
-        "type": "matching", 
-        "question": "Match the term with its definition:",
-        "pairs": [
-          ["Program", "A set of instructions for a computer"],
-          ["Bug", "An error in code"],
-          ["Debug", "Find and fix errors"],
-          ["Code", "Written computer instructions"]
-        ]
-      },
-      {
-        "id": "intro_4",
-        "type": "multiple_choice",
-        "question": "What is a variable?",
-        "choices": [
-          "a named storage for a value",
-          "a type of function",
-          "a constant",
-          "none of the above"
-        ],
-        "correctAnswer": 0
-      },
-      {
-        "id": "intro_5",
-        "type": "true_false",
-        "question": "A integer stores numbers with decimals",
-        "correctAnswer": false
-      }
-    ]
-  }
+  "id": "introduction",
+  "title": "Introduction to Programming",
+  "description": "Get started with basic programming concepts",
+  "exercises": [
+    {
+      "id": "intro_1",
+      "type": "multiple_choice",
+      "question": "What is programming?",
+      "choices": [
+        "Writing instructions for computers",
+        "Building computer hardware",
+        "Installing software",
+        "Using social media"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "intro_2",
+      "type": "true_false",
+      "question": "Programming languages are used to communicate with computers.",
+      "correctAnswer": true
+    },
+    {
+      "id": "intro_3",
+      "type": "matching",
+      "question": "Match the term with its definition:",
+      "pairs": [
+        ["Program", "A set of instructions for a computer"],
+        ["Bug", "An error in code"],
+        ["Debug", "Find and fix errors"],
+        ["Code", "Written computer instructions"]
+      ]
+    },
+    {
+      "id": "intro_4",
+      "type": "multiple_choice",
+      "question": "What is a variable?",
+      "choices": [
+        "a named storage for a value",
+        "a type of function",
+        "a constant",
+        "none of the above"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "intro_5",
+      "type": "true_false",
+      "question": "A integer stores numbers with decimals",
+      "correctAnswer": false
+    }
+  ]
+}

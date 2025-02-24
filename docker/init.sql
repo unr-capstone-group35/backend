@@ -36,37 +36,37 @@ CREATE TRIGGER update_user_updated_at
 CREATE TABLE IF NOT EXISTS user_course_progress (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    course_name VARCHAR(100) NOT NULL,  
+    course_id VARCHAR(100) NOT NULL,  
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_accessed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP WITH TIME ZONE,
-    UNIQUE(user_id, course_name)
+    UNIQUE(user_id, course_id)
 );
 
 -- Track user's progress in individual lessons
 CREATE TABLE IF NOT EXISTS user_lesson_progress (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    course_name VARCHAR(100) NOT NULL,
+    course_id VARCHAR(100) NOT NULL,
     lesson_id VARCHAR(100) NOT NULL,  -- References lesson ID from JSON
     status VARCHAR(20) NOT NULL CHECK (status IN ('not_started', 'in_progress', 'completed')),
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP WITH TIME ZONE,
-    UNIQUE(user_id, course_name, lesson_id)
+    UNIQUE(user_id, course_id, lesson_id)
 );
 
 -- Track user's exercise attempts and results
 CREATE TABLE IF NOT EXISTS user_exercise_attempts (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
-    course_name VARCHAR(100) NOT NULL,
+    course_id VARCHAR(100) NOT NULL,
     lesson_id VARCHAR(100) NOT NULL,
     exercise_id VARCHAR(100) NOT NULL,
     attempt_number INTEGER NOT NULL,
     answer TEXT NOT NULL,
     is_correct BOOLEAN NOT NULL,
     attempted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    UNIQUE(user_id, course_name, lesson_id, exercise_id, attempt_number)
+    UNIQUE(user_id, course_id, lesson_id, exercise_id, attempt_number)
 );
 
 -- Track user achievements/badges
@@ -93,10 +93,10 @@ CREATE INDEX IF NOT EXISTS idx_user_achievements_user ON user_achievements(user_
 
 -- Add composite indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_lesson_progress_composite 
-ON user_lesson_progress(user_id, course_name, lesson_id);
+ON user_lesson_progress(user_id, course_id, lesson_id);
 
 CREATE INDEX IF NOT EXISTS idx_exercise_attempts_composite 
-ON user_exercise_attempts(user_id, course_name, lesson_id, exercise_id);
+ON user_exercise_attempts(user_id, course_id, lesson_id, exercise_id);
 
 -- Update timestamp triggers
 CREATE OR REPLACE FUNCTION update_last_accessed_timestamp()

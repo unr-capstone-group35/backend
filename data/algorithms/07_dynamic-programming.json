@@ -1,36 +1,36 @@
 {
-    "lessonId": "dynamic-programming",
-    "title": "Dynamic Programming",
-    "description": "Master optimization through dynamic programming",
-    "exercises": [
-        {
-            "id": "dp_1",
-            "type": "multiple_choice",
-            "question": "What is the key concept of dynamic programming?",
-            "choices": [
-                "Storing sub-problem solutions",
-                "Dividing into smaller parts",
-                "Using recursion",
-                "Sorting data"
-            ],
-            "correctAnswer": 0
-        },
-        {
-            "id": "dp_2",
-            "type": "true_false",
-            "question": "Dynamic programming always improves time complexity compared to recursive solutions.",
-            "correctAnswer": false
-        },
-        {
-            "id": "dp_3",
-            "type": "matching",
-            "question": "Match DP concepts with their meanings:",
-            "pairs": [
-                ["Memoization", "Cache results"],
-                ["Tabulation", "Bottom-up approach"],
-                ["State", "Sub-problem parameter"],
-                ["Optimal substructure", "Solutions build on sub-solutions"]
-            ]
-        }
-    ]
+  "id": "dynamic-programming",
+  "title": "Dynamic Programming",
+  "description": "Master optimization through dynamic programming",
+  "exercises": [
+    {
+      "id": "dp_1",
+      "type": "multiple_choice",
+      "question": "What is the key concept of dynamic programming?",
+      "choices": [
+        "Storing sub-problem solutions",
+        "Dividing into smaller parts",
+        "Using recursion",
+        "Sorting data"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "dp_2",
+      "type": "true_false",
+      "question": "Dynamic programming always improves time complexity compared to recursive solutions.",
+      "correctAnswer": false
+    },
+    {
+      "id": "dp_3",
+      "type": "matching",
+      "question": "Match DP concepts with their meanings:",
+      "pairs": [
+        ["Memoization", "Cache results"],
+        ["Tabulation", "Bottom-up approach"],
+        ["State", "Sub-problem parameter"],
+        ["Optimal substructure", "Solutions build on sub-solutions"]
+      ]
+    }
+  ]
 }

@@ -3,12 +3,13 @@ package course
 import "github.com/tylerolson/capstone-backend/db"
 
 type Course struct {
+	ID      string   `json:"id"`
 	Name    string   `json:"name"`
 	Lessons []Lesson `json:"lessons"`
 }
 
 type Lesson struct {
-	LessonID    string     `json:"lessonId"`
+	ID          string     `json:"id"`
 	Title       string     `json:"title"`
 	Description string     `json:"description"`
 	Exercises   []Exercise `json:"exercises"`
@@ -28,16 +29,16 @@ type Exercise struct {
 type Service interface {
 	// Course Management
 	ListCourseNames() ([]string, error)
-	GetCourseByName(name string) (*Course, error)
-	GetLessonByID(courseName, lessonID string) (*Lesson, error)
+	GetCourseByID(courseID string) (*Course, error)
+	GetLessonByID(courseID, lessonID string) (*Lesson, error)
 
 	// Progress Tracking
-	GetCourseProgress(userID int, courseName string) (*db.CourseProgress, error)
-	GetLessonProgress(userID int, courseName, lessonID string) (*db.LessonProgress, error)
-	UpdateLessonProgress(userID int, courseName, lessonID string, status string) error
+	GetCourseProgress(userID int, courseID string) (*db.CourseProgress, error)
+	GetLessonProgress(userID int, courseID string, lessonID string) (*db.LessonProgress, error)
+	UpdateLessonProgress(userID int, courseID string, lessonID string, status string) error
 
 	// Exercise Management
-	VerifyExerciseAnswer(courseName, lessonID, exerciseID string, answer interface{}) (bool, error)
+	VerifyExerciseAnswer(courseID, lessonID, exerciseID string, answer interface{}) (bool, error)
 
 	// Data Loading
 	LoadCourse(filename string) error

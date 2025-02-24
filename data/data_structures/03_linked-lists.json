@@ -1,37 +1,37 @@
 {
-    "lessonId": "linked-lists",
-    "title": "Linked Lists",
-    "description": "Understand linked lists and their operations",
-    "exercises": [
-        {
-            "id": "ll_1",
-            "type": "multiple_choice",
-            "question": "What does each node in a linked list contain?",
-            "choices": [
-                "Data and a reference to the next node",
-                "Only data",
-                "Only a reference to the next node",
-                "Multiple references to other nodes"
-            ],
-            "correctAnswer": 0
-        },
-        {
-            "id": "ll_2",
-            "type": "ordering",
-            "question": "Order the steps to insert a new node at the beginning of a linked list:",
-            "items": [
-                "Create new node",
-                "Set new node's data",
-                "Point new node to current head",
-                "Update head to new node"
-            ],
-            "correctOrder": [0, 1, 2, 3]
-        },
-        {
-            "id": "ll_3",
-            "type": "true_false",
-            "question": "A singly linked list node can directly access its previous node.",
-            "correctAnswer": false
-        }
-    ]
+  "id": "linked-lists",
+  "title": "Linked Lists",
+  "description": "Understand linked lists and their operations",
+  "exercises": [
+    {
+      "id": "ll_1",
+      "type": "multiple_choice",
+      "question": "What does each node in a linked list contain?",
+      "choices": [
+        "Data and a reference to the next node",
+        "Only data",
+        "Only a reference to the next node",
+        "Multiple references to other nodes"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "ll_2",
+      "type": "ordering",
+      "question": "Order the steps to insert a new node at the beginning of a linked list:",
+      "items": [
+        "Create new node",
+        "Set new node's data",
+        "Point new node to current head",
+        "Update head to new node"
+      ],
+      "correctOrder": [0, 1, 2, 3]
+    },
+    {
+      "id": "ll_3",
+      "type": "true_false",
+      "question": "A singly linked list node can directly access its previous node.",
+      "correctAnswer": false
+    }
+  ]
 }

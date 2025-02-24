@@ -1,41 +1,32 @@
 {
-    "lessonId": "trees",
-    "title": "Trees",
-    "description": "Explore tree structures and their implementations",
-    "exercises": [
-        {
-            "id": "tree_1",
-            "type": "multiple_choice",
-            "question": "What is the maximum number of children a binary tree node can have?",
-            "choices": [
-                "2",
-                "1",
-                "3",
-                "Unlimited"
-            ],
-            "correctAnswer": 0
-        },
-        {
-            "id": "tree_2",
-            "type": "ordering",
-            "question": "Order these tree traversal types from typically leftmost to rightmost visited nodes:",
-            "items": [
-                "Pre-order",
-                "In-order",
-                "Post-order"
-            ],
-            "correctOrder": [0, 1, 2]
-        },
-        {
-            "id": "tree_3",
-            "type": "matching",
-            "question": "Match tree terms with their meanings:",
-            "pairs": [
-                ["Root", "Top node"],
-                ["Leaf", "Node with no children"],
-                ["Height", "Maximum depth"],
-                ["Parent", "Node with children"]
-            ]
-        }
-    ]
+  "id": "trees",
+  "title": "Trees",
+  "description": "Explore tree structures and their implementations",
+  "exercises": [
+    {
+      "id": "tree_1",
+      "type": "multiple_choice",
+      "question": "What is the maximum number of children a binary tree node can have?",
+      "choices": ["2", "1", "3", "Unlimited"],
+      "correctAnswer": 0
+    },
+    {
+      "id": "tree_2",
+      "type": "ordering",
+      "question": "Order these tree traversal types from typically leftmost to rightmost visited nodes:",
+      "items": ["Pre-order", "In-order", "Post-order"],
+      "correctOrder": [0, 1, 2]
+    },
+    {
+      "id": "tree_3",
+      "type": "matching",
+      "question": "Match tree terms with their meanings:",
+      "pairs": [
+        ["Root", "Top node"],
+        ["Leaf", "Node with no children"],
+        ["Height", "Maximum depth"],
+        ["Parent", "Node with children"]
+      ]
+    }
+  ]
 }

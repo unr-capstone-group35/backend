@@ -1,38 +1,33 @@
 {
-    "lessonId": "searching-algorithms",
-    "title": "Searching Algorithms",
-    "description": "Master different searching techniques",
-    "exercises": [
-        {
-            "id": "search_1",
-            "type": "multiple_choice",
-            "question": "Which search algorithm requires a sorted array?",
-            "choices": [
-                "Binary Search",
-                "Linear Search",
-                "Both",
-                "Neither"
-            ],
-            "correctAnswer": 0
-        },
-        {
-            "id": "search_2",
-            "type": "true_false",
-            "question": "Linear search will always find an element faster than binary search.",
-            "correctAnswer": false
-        },
-        {
-            "id": "search_3",
-            "type": "ordering",
-            "question": "Order the steps of binary search:",
-            "items": [
-                "Find middle element",
-                "Compare with target",
-                "If equal, return index",
-                "If greater, search right half",
-                "If less, search left half"
-            ],
-            "correctOrder": [0, 1, 2, 3, 4]
-        }
-    ]
+  "id": "searching-algorithms",
+  "title": "Searching Algorithms",
+  "description": "Master different searching techniques",
+  "exercises": [
+    {
+      "id": "search_1",
+      "type": "multiple_choice",
+      "question": "Which search algorithm requires a sorted array?",
+      "choices": ["Binary Search", "Linear Search", "Both", "Neither"],
+      "correctAnswer": 0
+    },
+    {
+      "id": "search_2",
+      "type": "true_false",
+      "question": "Linear search will always find an element faster than binary search.",
+      "correctAnswer": false
+    },
+    {
+      "id": "search_3",
+      "type": "ordering",
+      "question": "Order the steps of binary search:",
+      "items": [
+        "Find middle element",
+        "Compare with target",
+        "If equal, return index",
+        "If greater, search right half",
+        "If less, search left half"
+      ],
+      "correctOrder": [0, 1, 2, 3, 4]
+    }
+  ]
 }

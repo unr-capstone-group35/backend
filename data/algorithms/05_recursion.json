@@ -1,36 +1,36 @@
 {
-    "lessonId": "recursion",
-    "title": "Recursion",
-    "description": "Understand recursive problem-solving approaches",
-    "exercises": [
-        {
-            "id": "rec_1",
-            "type": "multiple_choice",
-            "question": "What are the two main components of a recursive function?",
-            "choices": [
-                "Base case and recursive case",
-                "Loop and condition",
-                "Variable and function",
-                "Input and output"
-            ],
-            "correctAnswer": 0
-        },
-        {
-            "id": "rec_2",
-            "type": "true_false",
-            "question": "Every recursive solution can be implemented iteratively.",
-            "correctAnswer": true
-        },
-        {
-            "id": "rec_3",
-            "type": "matching",
-            "question": "Match recursive concepts with examples:",
-            "pairs": [
-                ["Base case", "n == 0"],
-                ["Recursive case", "n * factorial(n-1)"],
-                ["Stack frame", "Function call memory"],
-                ["Tail recursion", "Optimization technique"]
-            ]
-        }
-    ]
+  "id": "recursion",
+  "title": "Recursion",
+  "description": "Understand recursive problem-solving approaches",
+  "exercises": [
+    {
+      "id": "rec_1",
+      "type": "multiple_choice",
+      "question": "What are the two main components of a recursive function?",
+      "choices": [
+        "Base case and recursive case",
+        "Loop and condition",
+        "Variable and function",
+        "Input and output"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "rec_2",
+      "type": "true_false",
+      "question": "Every recursive solution can be implemented iteratively.",
+      "correctAnswer": true
+    },
+    {
+      "id": "rec_3",
+      "type": "matching",
+      "question": "Match recursive concepts with examples:",
+      "pairs": [
+        ["Base case", "n == 0"],
+        ["Recursive case", "n * factorial(n-1)"],
+        ["Stack frame", "Function call memory"],
+        ["Tail recursion", "Optimization technique"]
+      ]
+    }
+  ]
 }

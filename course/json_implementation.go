@@ -46,9 +46,9 @@ func (j *JSONStore) LoadCourseDir() error {
 	return nil
 }
 
-func (j *JSONStore) loadCourseFromDir(courseName string) error {
+func (j *JSONStore) loadCourseFromDir(courseID string) error {
 	// Load root.json first
-	rootPath := filepath.Join(j.dataDir, courseName, "root.json")
+	rootPath := filepath.Join(j.dataDir, courseID, "root.json")
 	var course Course
 
 	data, err := os.ReadFile(rootPath)
@@ -61,7 +61,7 @@ func (j *JSONStore) loadCourseFromDir(courseName string) error {
 	}
 
 	// Load all lesson files
-	lessonFiles, err := filepath.Glob(filepath.Join(j.dataDir, courseName, "*.json"))
+	lessonFiles, err := filepath.Glob(filepath.Join(j.dataDir, courseID, "*.json"))
 	if err != nil {
 		return err
 	}
@@ -83,7 +83,7 @@ func (j *JSONStore) loadCourseFromDir(courseName string) error {
 	}
 
 	course.Lessons = lessons
-	j.courses[course.Name] = &course
+	j.courses[course.ID] = &course
 
 	return nil
 }
@@ -97,8 +97,8 @@ func (j *JSONStore) ListCourseNames() ([]string, error) {
 	return names, nil
 }
 
-func (j *JSONStore) GetCourseByName(name string) (*Course, error) {
-	course, ok := j.courses[name]
+func (j *JSONStore) GetCourseByID(courseID string) (*Course, error) {
+	course, ok := j.courses[courseID]
 	if !ok {
 		return nil, errors.New("course not found")
 	}
@@ -106,14 +106,14 @@ func (j *JSONStore) GetCourseByName(name string) (*Course, error) {
 	return course, nil
 }
 
-func (j *JSONStore) GetLessonByID(courseName string, lessonID string) (*Lesson, error) {
-	course, ok := j.courses[courseName]
+func (j *JSONStore) GetLessonByID(courseID string, lessonID string) (*Lesson, error) {
+	course, ok := j.courses[courseID]
 	if !ok {
 		return nil, errors.New("course not found")
 	}
 
 	for i := range course.Lessons {
-		if course.Lessons[i].LessonID == lessonID {
+		if course.Lessons[i].ID == lessonID {
 			return &course.Lessons[i], nil
 		}
 	}
@@ -126,20 +126,20 @@ func (j *JSONStore) LoadCourse(filename string) error {
 }
 
 // Progress tracking methods
-func (j *JSONStore) GetCourseProgress(userID int, courseName string) (*db.CourseProgress, error) {
-	return j.db.GetOrCreateCourseProgress(userID, courseName)
+func (j *JSONStore) GetCourseProgress(userID int, courseID string) (*db.CourseProgress, error) {
+	return j.db.GetOrCreateCourseProgress(userID, courseID)
 }
 
-func (j *JSONStore) GetLessonProgress(userID int, courseName, lessonID string) (*db.LessonProgress, error) {
-	progress, err := j.db.GetLessonProgress(userID, courseName, lessonID)
+func (j *JSONStore) GetLessonProgress(userID int, courseID, lessonID string) (*db.LessonProgress, error) {
+	progress, err := j.db.GetLessonProgress(userID, courseID, lessonID)
 	if err != nil {
 		if err.Error() == "lesson does not exist" {
 			return &db.LessonProgress{
-				UserID:     userID,
-				CourseName: courseName,
-				LessonID:   lessonID,
-				Status:     "not_started",
-				StartedAt:  time.Now(),
+				UserID:    userID,
+				CourseID:  courseID,
+				LessonID:  lessonID,
+				Status:    "not_started",
+				StartedAt: time.Now(),
 			}, nil
 		}
 		return nil, err
@@ -147,19 +147,19 @@ func (j *JSONStore) GetLessonProgress(userID int, courseName, lessonID string) (
 	return progress, nil
 }
 
-func (j *JSONStore) UpdateLessonProgress(userID int, courseName, lessonID, status string) error {
-	return j.db.UpdateLessonProgress(userID, courseName, lessonID, status)
+func (j *JSONStore) UpdateLessonProgress(userID int, courseID, lessonID, status string) error {
+	return j.db.UpdateLessonProgress(userID, courseID, lessonID, status)
 }
 
-func (j *JSONStore) VerifyExerciseAnswer(courseName, lessonID, exerciseID string, answer interface{}) (bool, error) {
-	course, ok := j.courses[courseName]
+func (j *JSONStore) VerifyExerciseAnswer(courseID, lessonID, exerciseID string, answer interface{}) (bool, error) {
+	course, ok := j.courses[courseID]
 	if !ok {
 		return false, errors.New("course not found")
 	}
 
 	var targetExercise *Exercise
 	for _, lesson := range course.Lessons {
-		if lesson.LessonID == lessonID {
+		if lesson.ID == lessonID {
 			for _, ex := range lesson.Exercises {
 				if ex.ID == exerciseID {
 					targetExercise = &ex
