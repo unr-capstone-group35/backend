@@ -3,6 +3,7 @@ package auth
 import (
 	"context"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/tylerolson/capstone-backend/db"
@@ -13,9 +14,11 @@ type Middleware func(http.Handler) http.Handler
 func DbAuthMiddleware(db *db.Database) Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			token := r.Header.Get(TokenHeaderKey)
+			authHeader := r.Header.Get("Authorization")
+			token := strings.TrimPrefix(authHeader, "Bearer ")
+
 			if len(token) == 0 {
-				http.Error(w, "Unauthorized", http.StatusUnauthorized)
+				http.Error(w, "Token not provided", http.StatusUnauthorized)
 				return
 			}
 
@@ -33,6 +36,7 @@ func DbAuthMiddleware(db *db.Database) Middleware {
 
 			// Add user ID to request context
 			ctx := context.WithValue(r.Context(), userIDKey, session.UserID)
+			ctx = context.WithValue(ctx, tokenKey, token)
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}

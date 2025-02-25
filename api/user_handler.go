@@ -6,7 +6,8 @@ import (
 	"net/http"
 	"time"
 
-	User "github.com/tylerolson/capstone-backend/user"
+	"github.com/tylerolson/capstone-backend/auth"
+	"github.com/tylerolson/capstone-backend/user"
 )
 
 type CreateUserRequest struct {
@@ -65,12 +66,12 @@ func (s *Server) handleCreateUser() http.HandlerFunc {
 		}
 
 		// Create unique user with username and email
-		user, err := s.UserService.Create(request.Username, request.Email, request.Password)
+		u, err := s.UserService.Create(request.Username, request.Email, request.Password)
 		if err != nil {
-			if errors.Is(err, User.ErrUsernameTaken) {
+			if errors.Is(err, user.ErrUsernameTaken) {
 				s.logger.Debug("Username already exists", "error", err)
 				http.Error(w, "Username already exists", http.StatusConflict)
-			} else if errors.Is(err, User.ErrEmailTaken) {
+			} else if errors.Is(err, user.ErrEmailTaken) {
 				s.logger.Debug("Email already exists", "error", err)
 				http.Error(w, "Email already exists", http.StatusConflict)
 			} else { // unexpected error, we should log it
@@ -85,8 +86,8 @@ func (s *Server) handleCreateUser() http.HandlerFunc {
 		// Send response
 		w.Header().Set("Content-Type", "application/json")
 		response := CreateUserResponse{
-			Username: user.Username,
-			Email:    user.Email,
+			Username: u.Username,
+			Email:    u.Email,
 		}
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {
@@ -133,8 +134,9 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 
 func (s *Server) handleLogout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token := r.Header.Get("X-Session-Token")
-		if len(token) == 0 {
+		token, ok := auth.GetToken(r.Context())
+
+		if !ok {
 			s.logger.Debug("No token provided in logout")
 			http.Error(w, "No session token provided", http.StatusBadRequest)
 			return

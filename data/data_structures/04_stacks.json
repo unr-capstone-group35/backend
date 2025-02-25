@@ -1,43 +1,37 @@
 {
-    "lessonId": "stacks",
-    "title": "Stacks",
-    "description": "Master the stack data structure and its applications",
-    "exercises": [
-        {
-            "id": "stack_1",
-            "type": "multiple_choice",
-            "question": "Which principle describes how a stack operates?",
-            "choices": [
-                "LIFO (Last In First Out)",
-                "FIFO (First In First Out)",
-                "Random Access",
-                "Sorted Order"
-            ],
-            "correctAnswer": 0
-        },
-        {
-            "id": "stack_2",
-            "type": "matching",
-            "question": "Match stack operations with their purpose:",
-            "pairs": [
-                ["push", "Add element to top"],
-                ["pop", "Remove top element"],
-                ["peek", "View top element"],
-                ["isEmpty", "Check if stack has elements"]
-            ]
-        },
-        {
-            "id": "stack_3",
-            "type": "ordering",
-            "question": "Order these elements as they would be popped from a stack (last pushed was 5):",
-            "items": [
-                "5",
-                "4",
-                "3",
-                "2",
-                "1"
-            ],
-            "correctOrder": [0, 1, 2, 3, 4]
-        }
-    ]
+  "id": "stacks",
+  "title": "Stacks",
+  "description": "Master the stack data structure and its applications",
+  "exercises": [
+    {
+      "id": "stack_1",
+      "type": "multiple_choice",
+      "question": "Which principle describes how a stack operates?",
+      "choices": [
+        "LIFO (Last In First Out)",
+        "FIFO (First In First Out)",
+        "Random Access",
+        "Sorted Order"
+      ],
+      "correctAnswer": 0
+    },
+    {
+      "id": "stack_2",
+      "type": "matching",
+      "question": "Match stack operations with their purpose:",
+      "pairs": [
+        ["push", "Add element to top"],
+        ["pop", "Remove top element"],
+        ["peek", "View top element"],
+        ["isEmpty", "Check if stack has elements"]
+      ]
+    },
+    {
+      "id": "stack_3",
+      "type": "ordering",
+      "question": "Order these elements as they would be popped from a stack (last pushed was 5):",
+      "items": ["5", "4", "3", "2", "1"],
+      "correctOrder": [0, 1, 2, 3, 4]
+    }
+  ]
 }

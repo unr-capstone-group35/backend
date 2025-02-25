@@ -1,38 +1,38 @@
 {
-    "lessonId": "programming-basics",
-    "title": "Programming Basics",
-    "description": "Learn the fundamental concepts of programming",
-    "exercises": [
-        {
-            "id": "intro_1",
-            "type": "ordering",
-            "question": "Put these programming concepts in order from most basic to most advanced:",
-            "items": [
-                "Variables",
-                "Functions",
-                "Conditional Statements",
-                "Loops",
-                "Practice Projects"
-            ],
-            "correctOrder": [0, 1, 2, 3, 4]
-        },
-        {
-            "id": "intro_2",
-            "type": "fill_blank",
-            "question": "A ___ is used to store data in a program.",
-            "correctAnswer": "variable"
-        },
-        {
-            "id": "intro_3",
-            "type": "multiple_choice",
-            "question": "What is the main purpose of functions in programming?",
-            "choices": [
-                "To create reusable blocks of code",
-                "To store data",
-                "To print text to the screen",
-                "To end the program"
-            ],
-            "correctAnswer": 0
-        }
-    ]
+  "id": "programming-basics",
+  "title": "Programming Basics",
+  "description": "Learn the fundamental concepts of programming",
+  "exercises": [
+    {
+      "id": "intro_1",
+      "type": "ordering",
+      "question": "Put these programming concepts in order from most basic to most advanced:",
+      "items": [
+        "Variables",
+        "Functions",
+        "Conditional Statements",
+        "Loops",
+        "Practice Projects"
+      ],
+      "correctOrder": [0, 1, 2, 3, 4]
+    },
+    {
+      "id": "intro_2",
+      "type": "fill_blank",
+      "question": "A ___ is used to store data in a program.",
+      "correctAnswer": "variable"
+    },
+    {
+      "id": "intro_3",
+      "type": "multiple_choice",
+      "question": "What is the main purpose of functions in programming?",
+      "choices": [
+        "To create reusable blocks of code",
+        "To store data",
+        "To print text to the screen",
+        "To end the program"
+      ],
+      "correctAnswer": 0
+    }
+  ]
 }

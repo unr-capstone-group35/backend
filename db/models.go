@@ -5,6 +5,14 @@ import (
 	"time"
 )
 
+type Status string
+
+const (
+	StatusNotStarted Status = "not_started"
+	StatusInProgress Status = "in_progress"
+	StatusCompleted  Status = "completed"
+)
+
 type User struct {
 	ID           int       `json:"id"`
 	Username     string    `json:"username"`
@@ -16,7 +24,7 @@ type User struct {
 
 type Session struct {
 	ID        int       `json:"id"`
-	UserID    int       `json:"userID"`
+	UserID    int       `json:"userId"`
 	Token     string    `json:"token"`
 	ExpiresAt time.Time `json:"expiresAt"`
 	CreatedAt time.Time `json:"createdAt"`
@@ -24,8 +32,8 @@ type Session struct {
 
 type CourseProgress struct {
 	ID             int        `json:"id"`
-	UserID         int        `json:"userID"`
-	CourseName     string     `json:"courseName"`
+	UserID         int        `json:"userId"`
+	CourseID       string     `json:"courseId"`
 	StartedAt      time.Time  `json:"startedAt"`
 	LastAccessedAt time.Time  `json:"lastAccessedAt"`
 	CompletedAt    *time.Time `json:"completedAt,omitempty"`
@@ -33,20 +41,20 @@ type CourseProgress struct {
 
 type LessonProgress struct {
 	ID          int        `json:"id"`
-	UserID      int        `json:"userID"`
-	CourseName  string     `json:"courseName"`
-	LessonID    string     `json:"lessonID"`
-	Status      string     `json:"status"`
+	UserID      int        `json:"userId"`
+	CourseID    string     `json:"courseId"`
+	LessonID    string     `json:"lessonId"`
+	Status      Status     `json:"status"`
 	StartedAt   time.Time  `json:"startedAt"`
-	CompletedAt *time.Time `json:"completedAt,omitempty"`
+	CompletedAt *time.Time `json:"completed_at,omitempty"`
 }
 
 type ExerciseAttempt struct {
 	ID            int       `json:"id"`
-	UserID        int       `json:"userID"`
-	CourseName    string    `json:"courseName"`
-	LessonID      string    `json:"lessonID"`
-	ExerciseID    string    `json:"exerciseID"`
+	UserID        int       `json:"userId"`
+	CourseID      string    `json:"courseId"`
+	LessonID      string    `json:"lessonId"`
+	ExerciseID    string    `json:"exerciseId"`
 	AttemptNumber int       `json:"attemptNumber"`
 	Answer        string    `json:"answer"`
 	IsCorrect     bool      `json:"is_correct"`
@@ -57,7 +65,7 @@ type ExerciseAttempt struct {
 type dbCourseProgress struct {
 	ID             int
 	UserID         int
-	CourseName     string
+	CourseID       string
 	StartedAt      time.Time
 	LastAccessedAt time.Time
 	CompletedAt    sql.NullTime
@@ -66,9 +74,9 @@ type dbCourseProgress struct {
 type dbLessonProgress struct {
 	ID          int
 	UserID      int
-	CourseName  string
+	CourseID    string
 	LessonID    string
-	Status      string
+	Status      Status
 	StartedAt   time.Time
 	CompletedAt sql.NullTime
 }
@@ -78,7 +86,7 @@ func (dbp *dbCourseProgress) toCourseProgress() *CourseProgress {
 	cp := &CourseProgress{
 		ID:             dbp.ID,
 		UserID:         dbp.UserID,
-		CourseName:     dbp.CourseName,
+		CourseID:       dbp.CourseID,
 		StartedAt:      dbp.StartedAt,
 		LastAccessedAt: dbp.LastAccessedAt,
 	}
@@ -90,12 +98,12 @@ func (dbp *dbCourseProgress) toCourseProgress() *CourseProgress {
 
 func (dbp *dbLessonProgress) toLessonProgress() *LessonProgress {
 	lp := &LessonProgress{
-		ID:         dbp.ID,
-		UserID:     dbp.UserID,
-		CourseName: dbp.CourseName,
-		LessonID:   dbp.LessonID,
-		Status:     dbp.Status,
-		StartedAt:  dbp.StartedAt,
+		ID:        dbp.ID,
+		UserID:    dbp.UserID,
+		CourseID:  dbp.CourseID,
+		LessonID:  dbp.LessonID,
+		Status:    dbp.Status,
+		StartedAt: dbp.StartedAt,
 	}
 	if dbp.CompletedAt.Valid {
 		lp.CompletedAt = &dbp.CompletedAt.Time

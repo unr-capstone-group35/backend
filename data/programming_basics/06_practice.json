@@ -1,43 +1,38 @@
 {
-    "lessonId": "practice",
-    "title": "Practice",
-    "description": "Apply everything you've learned so far",
-    "exercises": [
-        {
-            "id": "prac_1",
-            "type": "multiple_choice",
-            "question": "What will this code output: for(let i=0; i<3; i++) { console.log(i); }",
-            "choices": [
-                "0, 1, 2",
-                "1, 2, 3",
-                "0, 1, 2, 3",
-                "1, 2"
-            ],
-            "correctAnswer": 0
-        },
-        {
-            "id": "prac_2",
-            "type": "ordering",
-            "question": "Put these steps in order to solve a programming problem:",
-            "items": [
-                "Understand the problem",
-                "Plan the solution",
-                "Write the code",
-                "Test the code",
-                "Fix any bugs"
-            ],
-            "correctOrder": [0, 1, 2, 3, 4]
-        },
-        {
-            "id": "prac_3",
-            "type": "matching",
-            "question": "Match the concept with its use:",
-            "pairs": [
-                ["Variable", "Store data"],
-                ["Function", "Reuse code"],
-                ["Loop", "Repeat actions"],
-                ["If statement", "Make decisions"]
-            ]
-        }
-    ]
+  "id": "practice",
+  "title": "Practice",
+  "description": "Apply everything you've learned so far",
+  "exercises": [
+    {
+      "id": "prac_1",
+      "type": "multiple_choice",
+      "question": "What will this code output: for(let i=0; i<3; i++) { console.log(i); }",
+      "choices": ["0, 1, 2", "1, 2, 3", "0, 1, 2, 3", "1, 2"],
+      "correctAnswer": 0
+    },
+    {
+      "id": "prac_2",
+      "type": "ordering",
+      "question": "Put these steps in order to solve a programming problem:",
+      "items": [
+        "Understand the problem",
+        "Plan the solution",
+        "Write the code",
+        "Test the code",
+        "Fix any bugs"
+      ],
+      "correctOrder": [0, 1, 2, 3, 4]
+    },
+    {
+      "id": "prac_3",
+      "type": "matching",
+      "question": "Match the concept with its use:",
+      "pairs": [
+        ["Variable", "Store data"],
+        ["Function", "Reuse code"],
+        ["Loop", "Repeat actions"],
+        ["If statement", "Make decisions"]
+      ]
+    }
+  ]
 }

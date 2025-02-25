@@ -11,11 +11,11 @@ import (
 type contextKey string
 
 const (
-	TokenLength    = 32
-	TokenLifetime  = 24 * time.Hour
-	TokenHeaderKey = "X-Session-Token"
+	TokenLength   = 32
+	TokenLifetime = 24 * time.Hour
 
 	userIDKey contextKey = "userID"
+	tokenKey  contextKey = "token"
 )
 
 // GenerateToken creates a cryptographically secure random token
@@ -41,4 +41,9 @@ func CreateSession() (token string, expiresAt time.Time, err error) {
 func GetUserID(ctx context.Context) (int, bool) {
 	userID, ok := ctx.Value(userIDKey).(int)
 	return userID, ok
+}
+
+func GetToken(ctx context.Context) (string, bool) {
+	token, ok := ctx.Value(tokenKey).(string)
+	return token, ok
 }

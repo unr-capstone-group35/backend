@@ -9,6 +9,7 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/lmittmann/tint"
 	"github.com/tylerolson/capstone-backend/api"
 	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/db"
@@ -18,9 +19,11 @@ import (
 const PORT = "8080"
 
 func main() {
-	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
-		Level: slog.LevelDebug,
-	}))
+	logger := slog.New(
+		tint.NewHandler(os.Stdout, &tint.Options{
+			Level: slog.LevelDebug,
+		}),
+	)
 
 	logger.Debug("Could not decode create user request")
 

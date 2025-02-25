@@ -1,3 +1,5 @@
 {
-    "Name": "Algorithms"
+  "id": "algorithms",
+  "name": "Algorithms",
+  "description": "Master fundamental algorithms and their implementations"
 }

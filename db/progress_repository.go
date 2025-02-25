@@ -6,19 +6,19 @@ import (
 	"time"
 )
 
-func (d *Database) GetOrCreateCourseProgress(userID int, courseName string) (*CourseProgress, error) {
+func (d *Database) GetOrCreateCourseProgress(userID int, courseID string) (*CourseProgress, error) {
 	dbProgress := &dbCourseProgress{}
 
 	// Try to get existing progress
 	query := `
-        SELECT id, user_id, course_name, started_at, last_accessed_at, completed_at
+        SELECT id, user_id, course_id, started_at, last_accessed_at, completed_at
         FROM user_course_progress
-        WHERE user_id = $1 AND course_name = $2`
+        WHERE user_id = $1 AND course_id = $2`
 
-	err := d.DB.QueryRow(query, userID, courseName).Scan(
+	err := d.DB.QueryRow(query, userID, courseID).Scan(
 		&dbProgress.ID,
 		&dbProgress.UserID,
-		&dbProgress.CourseName,
+		&dbProgress.CourseID,
 		&dbProgress.StartedAt,
 		&dbProgress.LastAccessedAt,
 		&dbProgress.CompletedAt,
@@ -28,20 +28,20 @@ func (d *Database) GetOrCreateCourseProgress(userID int, courseName string) (*Co
 		// Create new progress record
 		now := time.Now()
 		insertQuery := `
-            INSERT INTO user_course_progress (user_id, course_name, started_at, last_accessed_at)
+            INSERT INTO user_course_progress (user_id, course_id, started_at, last_accessed_at)
             VALUES ($1, $2, $3, $4)
-            RETURNING id, user_id, course_name, started_at, last_accessed_at, completed_at`
+            RETURNING id, user_id, course_id, started_at, last_accessed_at, completed_at`
 
 		err = d.DB.QueryRow(
 			insertQuery,
 			userID,
-			courseName,
+			courseID,
 			now,
 			now,
 		).Scan(
 			&dbProgress.ID,
 			&dbProgress.UserID,
-			&dbProgress.CourseName,
+			&dbProgress.CourseID,
 			&dbProgress.StartedAt,
 			&dbProgress.LastAccessedAt,
 			&dbProgress.CompletedAt,
@@ -57,11 +57,11 @@ func (d *Database) GetOrCreateCourseProgress(userID int, courseName string) (*Co
 	return dbProgress.toCourseProgress(), nil
 }
 
-func (d *Database) UpdateLessonProgress(userID int, courseName, lessonID, status string) error {
+func (d *Database) UpdateLessonProgress(userID int, courseID string, lessonID string, status Status) error {
 	query := `
-		INSERT INTO user_lesson_progress (user_id, course_name, lesson_id, status)
+		INSERT INTO user_lesson_progress (user_id, course_id, lesson_id, status)
 		VALUES ($1, $2, $3, $4)
-		ON CONFLICT (user_id, course_name, lesson_id) DO UPDATE
+		ON CONFLICT (user_id, course_id, lesson_id) DO UPDATE
 		SET status = EXCLUDED.status,
 		    completed_at = CASE 
 				WHEN EXCLUDED.status = 'completed' AND user_lesson_progress.status != 'completed'
@@ -69,21 +69,21 @@ func (d *Database) UpdateLessonProgress(userID int, courseName, lessonID, status
 				ELSE user_lesson_progress.completed_at
 			END`
 
-	_, err := d.DB.Exec(query, userID, courseName, lessonID, status)
+	_, err := d.DB.Exec(query, userID, courseID, lessonID, status)
 	return err
 }
 
-func (d *Database) GetLessonProgress(userID int, courseName, lessonID string) (*LessonProgress, error) {
+func (d *Database) GetLessonProgress(userID int, courseID, lessonID string) (*LessonProgress, error) {
 	progress := &LessonProgress{}
 	query := `
-		SELECT id, user_id, course_name, lesson_id, status, started_at, completed_at
+		SELECT id, user_id, course_id, lesson_id, status, started_at, completed_at
 		FROM user_lesson_progress
-		WHERE user_id = $1 AND course_name = $2 AND lesson_id = $3`
+		WHERE user_id = $1 AND course_id = $2 AND lesson_id = $3`
 
-	err := d.DB.QueryRow(query, userID, courseName, lessonID).Scan(
+	err := d.DB.QueryRow(query, userID, courseID, lessonID).Scan(
 		&progress.ID,
 		&progress.UserID,
-		&progress.CourseName,
+		&progress.CourseID,
 		&progress.LessonID,
 		&progress.Status,
 		&progress.StartedAt,
@@ -100,9 +100,9 @@ func (d *Database) GetLessonProgress(userID int, courseName, lessonID string) (*
 }
 
 // GetCourseProgressWithPercentage gets course progress including completion percentage
-func (d *Database) GetCourseProgressWithPercentage(userID int, courseName string) (*CourseProgressWithPercentage, error) {
+func (d *Database) GetCourseProgressWithPercentage(userID int, courseID string) (*CourseProgressWithPercentage, error) {
 	// First get the basic progress
-	progress, err := d.GetOrCreateCourseProgress(userID, courseName)
+	progress, err := d.GetOrCreateCourseProgress(userID, courseID)
 	if err != nil {
 		return nil, fmt.Errorf("failed to get course progress: %v", err)
 	}
@@ -117,7 +117,7 @@ func (d *Database) GetCourseProgressWithPercentage(userID int, courseName string
                     ELSE NULL 
                 END) as completed_lessons
             FROM user_lesson_progress
-            WHERE user_id = $1 AND course_name = $2
+            WHERE user_id = $1 AND course_id = $2
         )
         SELECT 
             CASE 
@@ -128,7 +128,7 @@ func (d *Database) GetCourseProgressWithPercentage(userID int, courseName string
     `
 
 	var progressPercentage float64
-	err = d.DB.QueryRow(query, userID, courseName).Scan(&progressPercentage)
+	err = d.DB.QueryRow(query, userID, courseID).Scan(&progressPercentage)
 	if err != nil {
 		return nil, fmt.Errorf("failed to calculate progress percentage: %v", err)
 	}
