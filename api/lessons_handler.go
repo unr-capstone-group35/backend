@@ -3,8 +3,6 @@ package api
 import (
 	"encoding/json"
 	"net/http"
-
-	"github.com/tylerolson/capstone-backend/course"
 )
 
 type CourseInfo struct {
