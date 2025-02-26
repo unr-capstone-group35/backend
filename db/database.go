@@ -17,13 +17,20 @@ type Database struct {
 func NewDatabase() (*Database, error) {
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
-		panic(".env file not found")
+		fmt.Printf(".env not found %v\n", err)
 	}
 
 	// Get database connection details from environment variables
 	dbUser := os.Getenv("POSTGRES_USER")
 	dbPassword := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DB")
+
+	if len(dbUser) == 0 {
+		panic("dbUser not found")
+	}
+	if len(dbName) == 0 {
+		panic("dbName not found")
+	}
 
 	// Create connection string
 	connStr := fmt.Sprintf("postgres://%s:%s@localhost:5433/%s?sslmode=disable", dbUser, dbPassword, dbName)
