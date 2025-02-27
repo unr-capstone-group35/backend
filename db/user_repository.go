@@ -64,3 +64,22 @@ func (d *Database) ListUsers() ([]*User, error) {
 
 	return users, nil
 }
+
+func (d *Database) DeleteUserByUsername(username string) error {
+	query := `DELETE FROM users WHERE username = $1`
+	result, err := d.DB.Exec(query, username)
+	if err != nil {
+		return err
+	}
+
+	rowsAffected, err := result.RowsAffected()
+	if err != nil {
+		return err
+	}
+
+	if rowsAffected == 0 {
+		return fmt.Errorf("user does not exist")
+	}
+
+	return nil
+}

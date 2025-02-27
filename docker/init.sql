@@ -111,3 +111,29 @@ CREATE TRIGGER update_course_progress_timestamp
     BEFORE UPDATE ON user_course_progress
     FOR EACH ROW
     EXECUTE FUNCTION update_last_accessed_timestamp();
+
+-- Add ON DELETE CASCADE to foreign keys
+ALTER TABLE sessions 
+DROP CONSTRAINT sessions_user_id_fkey,
+ADD CONSTRAINT sessions_user_id_fkey 
+FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE user_course_progress 
+DROP CONSTRAINT user_course_progress_user_id_fkey,
+ADD CONSTRAINT user_course_progress_user_id_fkey 
+FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE user_lesson_progress 
+DROP CONSTRAINT user_lesson_progress_user_id_fkey,
+ADD CONSTRAINT user_lesson_progress_user_id_fkey 
+FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE user_exercise_attempts 
+DROP CONSTRAINT user_exercise_attempts_user_id_fkey,
+ADD CONSTRAINT user_exercise_attempts_user_id_fkey 
+FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE user_achievements 
+DROP CONSTRAINT user_achievements_user_id_fkey,
+ADD CONSTRAINT user_achievements_user_id_fkey 
+FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;

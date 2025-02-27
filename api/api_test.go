@@ -49,6 +49,11 @@ func TestRegisterLoginEndpoint(t *testing.T) {
 	testUsername := "User"
 	testPassword := "password123"
 
+	err = database.DeleteUserByUsername(testUsername)
+	if err != nil && err.Error() != "user does not exist" {
+		t.Fatalf("Could not delete test user: %v", err)
+	}
+
 	t.Run("Register Test User", func(t *testing.T) {
 		createUserBody, err := json.Marshal(api.CreateUserRequest{
 			Email:    testEmail,
