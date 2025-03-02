@@ -8,48 +8,66 @@ import (
 	"os"
 	"testing"
 
-	"github.com/lmittmann/tint"
 	"github.com/tylerolson/capstone-backend/api"
 	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/db"
+	"github.com/tylerolson/capstone-backend/services/progress"
+	"github.com/tylerolson/capstone-backend/services/session"
 	"github.com/tylerolson/capstone-backend/services/user"
 
 	"log/slog"
 )
 
-func TestRegisterLoginEndpoint(t *testing.T) {
-	os.Setenv("POSTGRES_USER", "dbuser")
-	os.Setenv("POSTGRES_PASSWORD", "dbpassword")
-	os.Setenv("POSTGRES_DB", "capstone_db")
-
+func setupTestServer(t *testing.T) *api.Server {
 	logger := slog.New(
-		tint.NewHandler(os.Stdout, &tint.Options{
+		slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
 			Level: slog.LevelDebug,
 		}),
 	)
 
-	//this needs to be a test database, not sure how yet
-	database, err := db.NewDatabase()
+	database, err := db.NewDatabase("dbuser", "dbpassword", "capstone_db", "", "")
 	if err != nil {
-		t.Fatalf("Failed to connect to database: %v", err)
+		logger.Error("Failed to connect to database", "error", err)
+		os.Exit(1)
 	}
-	defer database.Close()
 
+	// Initialize services with database
 	userService := user.NewService(database)
-	coursesStore := course.NewJSONStore("../data", database)
 
+	// Initialize course store with database
+	coursesStore := course.NewJSONStore("../data")
+	if err := coursesStore.LoadCourseDir(); err != nil {
+		logger.Error("Failed to load courses", "error", err)
+		os.Exit(1)
+	}
+
+	progressService := progress.NewService(database)
+	sessionService := session.NewService(database)
+
+	// Initialize server with all required dependencies
 	server := api.NewServer(
 		userService,
 		coursesStore,
-		database,
+		progressService,
+		sessionService,
 		logger,
 	)
 
-	testEmail := "user@example.com"
-	testUsername := "User"
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return server
+}
+
+func TestRegisterLoginEndpoint(t *testing.T) {
+	server := setupTestServer(t)
+
+	testEmail := "test@example.com"
+	testUsername := "testuser"
 	testPassword := "password123"
 
-	err = database.DeleteUserByUsername(testUsername)
+	err := server.UserService.DeleteUser(testUsername)
 	if err != nil && err.Error() != "user does not exist" {
 		t.Fatalf("Could not delete test user: %v", err)
 	}
