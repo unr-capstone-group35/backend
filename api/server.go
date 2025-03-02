@@ -4,27 +4,29 @@ import (
 	"log/slog"
 	"net/http"
 
-	"github.com/tylerolson/capstone-backend/auth"
 	"github.com/tylerolson/capstone-backend/course"
-	"github.com/tylerolson/capstone-backend/db"
-	"github.com/tylerolson/capstone-backend/user"
+	"github.com/tylerolson/capstone-backend/services/progress"
+	"github.com/tylerolson/capstone-backend/services/session"
+	"github.com/tylerolson/capstone-backend/services/user"
 )
 
 type Server struct {
-	Mux           *http.ServeMux
-	UserService   user.Service
-	CourseService course.Service
-	DB            *db.Database
-	logger        *slog.Logger
+	Mux             *http.ServeMux
+	UserService     user.Service
+	CourseService   course.Service
+	ProgressService progress.Service
+	SessionService  session.Service
+	logger          *slog.Logger
 }
 
-func NewServer(userService user.Service, courseService course.Service, database *db.Database, logger *slog.Logger) *Server {
+func NewServer(userService user.Service, courseService course.Service, progressService progress.Service, sessionService session.Service, logger *slog.Logger) *Server {
 	s := &Server{
-		UserService:   userService,
-		CourseService: courseService,
-		DB:            database,
-		Mux:           http.NewServeMux(),
-		logger:        logger,
+		UserService:     userService,
+		CourseService:   courseService,
+		ProgressService: progressService,
+		SessionService:  sessionService,
+		Mux:             http.NewServeMux(),
+		logger:          logger,
 	}
 
 	// Public routes
@@ -32,7 +34,7 @@ func NewServer(userService user.Service, courseService course.Service, database 
 	s.Mux.Handle("POST /api/register", s.handleCreateUser())
 
 	// Protected routes (require authentication)
-	dbAuth := auth.DbAuthMiddleware(s.DB)
+	dbAuth := s.DbAuthMiddleware()
 	s.Mux.Handle("POST /api/logout", dbAuth(s.handleLogout()))
 	s.Mux.Handle("GET /api/users", dbAuth(s.handleListUsers()))
 	s.Mux.Handle("GET /api/courses", dbAuth(s.handleListCourses()))

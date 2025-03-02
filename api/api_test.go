@@ -12,7 +12,7 @@ import (
 	"github.com/tylerolson/capstone-backend/api"
 	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/db"
-	"github.com/tylerolson/capstone-backend/user"
+	"github.com/tylerolson/capstone-backend/services/user"
 
 	"log/slog"
 )

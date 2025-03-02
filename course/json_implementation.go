@@ -7,23 +7,18 @@ import (
 	"os"
 	"path/filepath"
 	"strings"
-	"time"
-
-	"github.com/tylerolson/capstone-backend/db"
 )
 
 // JSONStore implements the course.Service interface
 type JSONStore struct {
 	courses map[string]*Course
 	dataDir string
-	db      *db.Database
 }
 
-func NewJSONStore(dataDir string, database *db.Database) *JSONStore {
+func NewJSONStore(dataDir string) *JSONStore {
 	return &JSONStore{
 		courses: make(map[string]*Course),
 		dataDir: dataDir,
-		db:      database,
 	}
 }
 
@@ -123,32 +118,6 @@ func (j *JSONStore) GetLessonByID(courseID string, lessonID string) (*Lesson, er
 
 func (j *JSONStore) LoadCourse(filename string) error {
 	return j.loadCourseFromDir(filepath.Base(filepath.Dir(filename)))
-}
-
-// Progress tracking methods
-func (j *JSONStore) GetCourseProgress(userID int, courseID string) (*db.CourseProgress, error) {
-	return j.db.GetOrCreateCourseProgress(userID, courseID)
-}
-
-func (j *JSONStore) GetLessonProgress(userID int, courseID, lessonID string) (*db.LessonProgress, error) {
-	progress, err := j.db.GetLessonProgress(userID, courseID, lessonID)
-	if err != nil {
-		if err.Error() == "lesson does not exist" {
-			return &db.LessonProgress{
-				UserID:    userID,
-				CourseID:  courseID,
-				LessonID:  lessonID,
-				Status:    db.StatusNotStarted,
-				StartedAt: time.Now(),
-			}, nil
-		}
-		return nil, err
-	}
-	return progress, nil
-}
-
-func (j *JSONStore) UpdateLessonProgress(userID int, courseID string, lessonID string, status db.Status) error {
-	return j.db.UpdateLessonProgress(userID, courseID, lessonID, status)
 }
 
 func (j *JSONStore) VerifyExerciseAnswer(courseID, lessonID, exerciseID string, answer interface{}) (bool, error) {

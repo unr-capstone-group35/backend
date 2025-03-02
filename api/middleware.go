@@ -1,17 +1,22 @@
-package auth
+package api
 
 import (
 	"context"
 	"net/http"
 	"strings"
 	"time"
+)
 
-	"github.com/tylerolson/capstone-backend/db"
+type contextKey string
+
+const (
+	userIDKey contextKey = "userID"
+	tokenKey  contextKey = "token"
 )
 
 type Middleware func(http.Handler) http.Handler
 
-func DbAuthMiddleware(db *db.Database) Middleware {
+func (s *Server) DbAuthMiddleware() Middleware {
 	return func(next http.Handler) http.Handler {
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			authHeader := r.Header.Get("Authorization")
@@ -22,7 +27,7 @@ func DbAuthMiddleware(db *db.Database) Middleware {
 				return
 			}
 
-			session, err := db.GetSessionByToken(token)
+			session, err := s.SessionService.GetSessionByToken(token)
 			if err != nil || session == nil {
 				http.Error(w, "Unauthorized", http.StatusUnauthorized)
 				return
@@ -40,4 +45,15 @@ func DbAuthMiddleware(db *db.Database) Middleware {
 			next.ServeHTTP(w, r.WithContext(ctx))
 		})
 	}
+}
+
+// GetUserID retrieves user ID from context
+func (s *Server) GetUserID(ctx context.Context) (int, bool) {
+	userID, ok := ctx.Value(userIDKey).(int)
+	return userID, ok
+}
+
+func (s *Server) GetToken(ctx context.Context) (string, bool) {
+	token, ok := ctx.Value(tokenKey).(string)
+	return token, ok
 }

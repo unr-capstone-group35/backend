@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -9,14 +8,15 @@ import (
 	"syscall"
 	"time"
 
+	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
 	"github.com/tylerolson/capstone-backend/api"
 	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/db"
-	"github.com/tylerolson/capstone-backend/user"
+	"github.com/tylerolson/capstone-backend/services/progress"
+	"github.com/tylerolson/capstone-backend/services/session"
+	"github.com/tylerolson/capstone-backend/services/user"
 )
-
-const PORT = "8080"
 
 func main() {
 	logger := slog.New(
@@ -25,8 +25,17 @@ func main() {
 		}),
 	)
 
-	// Initialize database connection
-	database, err := db.NewDatabase()
+	// Load .env file
+	if err := godotenv.Load(); err != nil {
+		panic(".env not found")
+	}
+
+	// Get database connection details from environment variables
+	dbUser := os.Getenv("POSTGRES_USER")
+	dbPassword := os.Getenv("POSTGRES_PASSWORD")
+	dbName := os.Getenv("POSTGRES_DB")
+
+	database, err := db.NewDatabase(dbUser, dbPassword, dbName, "", "")
 	if err != nil {
 		logger.Error("Failed to connect to database", "error", err)
 		os.Exit(1)
@@ -37,25 +46,27 @@ func main() {
 	userService := user.NewService(database)
 
 	// Initialize course store with database
-	coursesStore := course.NewJSONStore("./data", database)
+	coursesStore := course.NewJSONStore("./data")
 	if err := coursesStore.LoadCourseDir(); err != nil {
 		logger.Error("Failed to load courses", "error", err)
 		os.Exit(1)
 	}
 
-	logger.Info("Successfully connected to database")
+	progressService := progress.NewService(database)
+	sessionService := session.NewService(database)
 
 	// Initialize server with all required dependencies
 	server := api.NewServer(
 		userService,
 		coursesStore,
-		database,
+		progressService,
+		sessionService,
 		logger,
 	)
 
 	// Create an HTTP server with adjusted timeouts
 	srv := &http.Server{
-		Addr:              fmt.Sprintf(":%v", PORT),
+		Addr:              ":8080",
 		Handler:           server,
 		ReadHeaderTimeout: 5 * time.Second,
 	}

@@ -1,7 +1,5 @@
 package course
 
-import "github.com/tylerolson/capstone-backend/db"
-
 // Constants for exercise types
 type ExerciseType string
 
@@ -45,9 +43,6 @@ type Service interface {
 	GetLessonByID(courseID, lessonID string) (*Lesson, error)
 
 	// Progress Tracking
-	GetCourseProgress(userID int, courseID string) (*db.CourseProgress, error)
-	GetLessonProgress(userID int, courseID string, lessonID string) (*db.LessonProgress, error)
-	UpdateLessonProgress(userID int, courseID string, lessonID string, status db.Status) error
 
 	// Exercise Management
 	VerifyExerciseAnswer(courseID, lessonID, exerciseID string, answer interface{}) (bool, error)

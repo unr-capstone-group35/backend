@@ -37,6 +37,7 @@ CREATE TABLE IF NOT EXISTS user_course_progress (
     id SERIAL PRIMARY KEY,
     user_id INTEGER REFERENCES users(id),
     course_id VARCHAR(100) NOT NULL,  
+    status VARCHAR(20) NOT NULL CHECK (status IN ('not_started', 'in_progress', 'completed')),
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_accessed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP WITH TIME ZONE,
@@ -51,6 +52,7 @@ CREATE TABLE IF NOT EXISTS user_lesson_progress (
     lesson_id VARCHAR(100) NOT NULL,  -- References lesson ID from JSON
     status VARCHAR(20) NOT NULL CHECK (status IN ('not_started', 'in_progress', 'completed')),
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
+    last_accessed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP WITH TIME ZONE,
     UNIQUE(user_id, course_id, lesson_id)
 );
@@ -112,7 +114,13 @@ CREATE TRIGGER update_course_progress_timestamp
     FOR EACH ROW
     EXECUTE FUNCTION update_last_accessed_timestamp();
 
--- Add ON DELETE CASCADE to foreign keys
+
+CREATE TRIGGER update_lesson_progress_timestamp
+    BEFORE UPDATE ON user_lesson_progress
+    FOR EACH ROW
+    EXECUTE FUNCTION update_last_accessed_timestamp();
+
+-- Add ON DELETE CASCADE to foreign keys, this deletes all references to a user when a user is deleted
 ALTER TABLE sessions 
 DROP CONSTRAINT sessions_user_id_fkey,
 ADD CONSTRAINT sessions_user_id_fkey 
