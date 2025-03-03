@@ -6,8 +6,7 @@ import (
 	"net/http"
 	"time"
 
-	"github.com/tylerolson/capstone-backend/auth"
-	"github.com/tylerolson/capstone-backend/user"
+	"github.com/tylerolson/capstone-backend/services/user"
 )
 
 type CreateUserRequest struct {
@@ -108,10 +107,17 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 		}
 
 		// Authenticate user and create session
-		user, token, expiresAt, err := s.UserService.AuthenticateAndCreateSession(request.Username, request.Password)
+		user, err := s.UserService.Authenticate(request.Username, request.Password)
 		if err != nil {
 			s.logger.Debug("Sign in authentication failed", "error", err)
 			http.Error(w, "Invalid username or password", http.StatusUnauthorized)
+			return
+		}
+
+		session, err := s.SessionService.CreateSession(user.ID)
+		if err != nil {
+			s.logger.Debug("Sign in authentication failed", "error", err)
+			http.Error(w, "Could not create session", http.StatusInternalServerError)
 			return
 		}
 
@@ -120,8 +126,8 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 		response := SignInResponse{
 			Username:  user.Username,
 			Email:     user.Email,
-			Token:     token,
-			ExpiresAt: expiresAt.Format(time.RFC3339),
+			Token:     session.Token,
+			ExpiresAt: session.ExpiresAt.Format(time.RFC3339),
 		}
 
 		if err := json.NewEncoder(w).Encode(response); err != nil {
@@ -134,7 +140,7 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 
 func (s *Server) handleLogout() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
-		token, ok := auth.GetToken(r.Context())
+		token, ok := s.GetToken(r.Context())
 
 		if !ok {
 			s.logger.Debug("No token provided in logout")
@@ -143,7 +149,7 @@ func (s *Server) handleLogout() http.HandlerFunc {
 		}
 
 		// Delete the session from database
-		if err := s.UserService.DeleteSession(token); err != nil {
+		if err := s.SessionService.DeleteSession(token); err != nil {
 			s.logger.Error("Failed to delete session", "error", err)
 			http.Error(w, "Failed to logout", http.StatusInternalServerError)
 			return

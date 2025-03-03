@@ -5,14 +5,12 @@ import (
 	"fmt"
 	"log"
 	"net/http"
-	"time"
 
-	"github.com/tylerolson/capstone-backend/auth"
-	"github.com/tylerolson/capstone-backend/db"
+	"github.com/tylerolson/capstone-backend/services/progress"
 )
 
 type UpdateProgressRequest struct {
-	Status db.Status `json:"status"`
+	Status progress.Status `json:"status"`
 }
 
 type ExerciseAttemptRequest struct {
@@ -32,7 +30,7 @@ func (s *Server) handleGetCourseProgress() http.HandlerFunc {
 			return
 		}
 
-		userID, ok := auth.GetUserID(r.Context())
+		userID, ok := s.GetUserID(r.Context())
 		s.logger.Debug("User ID from context", "userID", userID, "ok", ok)
 
 		if !ok {
@@ -51,24 +49,12 @@ func (s *Server) handleGetCourseProgress() http.HandlerFunc {
 		s.logger.Debug("Course verification successful")
 
 		// Get or create progress
-		progress, err := s.CourseService.GetCourseProgress(userID, courseID)
+		progress, err := s.ProgressService.GetOrCreateCourseProgress(userID, courseID)
 		if err != nil {
 			s.logger.Warn("Error getting course progress", "error", err)
 
-			if err.Error() == "record not found" {
-				s.logger.Debug("Creating new progress record", "userID", userID, "courseID", courseID)
-				now := time.Now()
-				progress = &db.CourseProgress{
-					UserID:         userID,
-					CourseID:       courseID,
-					StartedAt:      now,
-					LastAccessedAt: now,
-				}
-			} else {
-				s.logger.Warn("Database error getting course progress", "error", err)
-				http.Error(w, "Failed to get course progress", http.StatusInternalServerError)
-				return
-			}
+			http.Error(w, "Failed to get course progress", http.StatusInternalServerError)
+			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
@@ -91,14 +77,14 @@ func (s *Server) handleGetLessonProgress() http.HandlerFunc {
 			return
 		}
 
-		userID, ok := auth.GetUserID(r.Context())
+		userID, ok := s.GetUserID(r.Context())
 		if !ok {
 			s.logger.Warn("User not found in context")
 			http.Error(w, "User not found in context", http.StatusUnauthorized)
 			return
 		}
 
-		progress, err := s.CourseService.GetLessonProgress(userID, courseID, lessonID)
+		progress, err := s.ProgressService.GetOrCreateLessonProgress(userID, courseID, lessonID)
 		if err != nil {
 			s.logger.Warn("Failed to get lesson progress", "error", err)
 			http.Error(w, fmt.Sprintf("Failed to get lesson progress: %v", err), http.StatusInternalServerError)
@@ -140,14 +126,14 @@ func (s *Server) handleUpdateLessonProgress() http.HandlerFunc {
 			return
 		}
 
-		userID, ok := auth.GetUserID(r.Context())
+		userID, ok := s.GetUserID(r.Context())
 		if !ok {
 			s.logger.Warn("User not found in context")
 			http.Error(w, "User not found in context", http.StatusUnauthorized)
 			return
 		}
 
-		if err := s.CourseService.UpdateLessonProgress(userID, courseID, lessonID, req.Status); err != nil {
+		if err := s.ProgressService.UpdateLessonProgress(userID, courseID, lessonID, req.Status); err != nil {
 			s.logger.Error("Failed to update lesson progress", "error", err)
 			http.Error(w, fmt.Sprintf("Failed to update lesson progress: %v", err), http.StatusInternalServerError)
 			return
@@ -177,7 +163,7 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 			return
 		}
 
-		userID, ok := auth.GetUserID(r.Context())
+		userID, ok := s.GetUserID(r.Context())
 		if !ok {
 			http.Error(w, "User not found in context", http.StatusUnauthorized)
 			return
@@ -190,7 +176,7 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 			return
 		}
 
-		attempt := &db.ExerciseAttempt{
+		attempt := &progress.ExerciseAttempt{
 			UserID:     userID,
 			CourseID:   courseID,
 			LessonID:   lessonID,
@@ -209,7 +195,7 @@ func (s *Server) handleExerciseAttempt() http.HandlerFunc {
 		attempt.IsCorrect = isCorrect
 
 		// Record the attempt using the DB field
-		if err := s.DB.RecordExerciseAttempt(attempt); err != nil {
+		if err := s.ProgressService.RecordExerciseAttempt(attempt); err != nil {
 			http.Error(w, fmt.Sprintf("Failed to record exercise attempt: %v", err), http.StatusInternalServerError)
 			return
 		}
