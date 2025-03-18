@@ -84,55 +84,37 @@ func (s *service) UpdateCourseProgress(userID int, courseID string, status Statu
 
 }
 
-func (s *service) GetOrCreateLessonProgress(userID int, courseID string, lessonID string) (*LessonProgress, error) {
+func (s *service) CreateLessonProgress(userID int, courseID string, lessonID string, initialExerciseId string) (*LessonProgress, error) {
 	progress := &LessonProgress{}
 
-	query := `
-		SELECT id, user_id, course_id, lesson_id, status, started_at, last_accessed_at, completed_at
-		FROM user_lesson_progress
-		WHERE user_id = $1 AND course_id = $2 AND lesson_id = $3`
+	now := time.Now()
+	insertQuery := `
+				INSERT INTO user_lesson_progress (user_id, course_id, lesson_id, next_exercise_id, status, started_at)
+				VALUES ($1, $2, $3, $4, $5)
+				RETURNING id, user_id, course_id, lesson_id, next_exercise_id, status, started_at, last_accessed_at, completed_at`
 
-	err := s.db.QueryRow(query, userID, courseID, lessonID).Scan(
+	err := s.db.QueryRow(
+		insertQuery,
+		userID,
+		courseID,
+		lessonID,
+		initialExerciseId,
+		StatusNotStarted,
+		now,
+	).Scan(
 		&progress.ID,
 		&progress.UserID,
 		&progress.CourseID,
 		&progress.LessonID,
+		&progress.NextExerciseID,
 		&progress.Status,
 		&progress.StartedAt,
 		&progress.LastAccessedAt,
 		&progress.CompletedAt,
 	)
 
-	if err == sql.ErrNoRows {
-		now := time.Now()
-		insertQuery := `
-				INSERT INTO user_lesson_progress (user_id, course_id, status, lesson_id, started_at)
-				VALUES ($1, $2, $3, $4, $5)
-				RETURNING id, user_id, course_id, lesson_id, status, started_at, last_accessed_at, completed_at`
-
-		err = s.db.QueryRow(
-			insertQuery,
-			userID,
-			courseID,
-			StatusNotStarted,
-			lessonID,
-			now,
-		).Scan(
-			&progress.ID,
-			&progress.UserID,
-			&progress.CourseID,
-			&progress.LessonID,
-			&progress.Status,
-			&progress.StartedAt,
-			&progress.LastAccessedAt,
-			&progress.CompletedAt,
-		)
-
-		if err != nil {
-			return nil, fmt.Errorf("failed to create course progress: %v", err)
-		}
-	} else if err != nil {
-		return nil, fmt.Errorf("failed to get course progress: %v", err)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create lesson progress: %v", err)
 	}
 
 	return progress, nil
@@ -140,8 +122,9 @@ func (s *service) GetOrCreateLessonProgress(userID int, courseID string, lessonI
 
 func (s *service) GetLessonProgress(userID int, courseID, lessonID string) (*LessonProgress, error) {
 	progress := &LessonProgress{}
+
 	query := `
-		SELECT id, user_id, course_id, lesson_id, status, started_at, completed_at
+		SELECT id, user_id, course_id, lesson_id, next_exercise_id, status, started_at, last_accessed_at, completed_at
 		FROM user_lesson_progress
 		WHERE user_id = $1 AND course_id = $2 AND lesson_id = $3`
 
@@ -150,16 +133,16 @@ func (s *service) GetLessonProgress(userID int, courseID, lessonID string) (*Les
 		&progress.UserID,
 		&progress.CourseID,
 		&progress.LessonID,
+		&progress.NextExerciseID,
 		&progress.Status,
 		&progress.StartedAt,
+		&progress.LastAccessedAt,
 		&progress.CompletedAt,
 	)
 
-	if err != nil {
-		if err == sql.ErrNoRows {
-			return nil, ErrNoProgress
-		}
-
+	if err == sql.ErrNoRows {
+		return nil, ErrNoProgress
+	} else if err != nil {
 		return nil, err
 	}
 

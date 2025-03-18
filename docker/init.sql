@@ -50,6 +50,7 @@ CREATE TABLE IF NOT EXISTS user_lesson_progress (
     user_id INTEGER REFERENCES users(id),
     course_id VARCHAR(100) NOT NULL,
     lesson_id VARCHAR(100) NOT NULL,  -- References lesson ID from JSON
+    next_exercise_id VARCHAR(100),
     status VARCHAR(20) NOT NULL CHECK (status IN ('not_started', 'in_progress', 'completed')),
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_accessed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,

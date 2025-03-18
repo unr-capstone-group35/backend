@@ -33,7 +33,8 @@ type CourseProgress struct {
 
 type LessonProgress struct {
 	Progress
-	LessonID string `json:"lessonId"`
+	LessonID       string `json:"lessonId"`
+	NextExerciseID string `json:"nextExerciseId"`
 }
 
 type ExerciseAttempt struct {
@@ -52,7 +53,8 @@ type Service interface {
 	GetOrCreateCourseProgress(userID int, courseID string) (*CourseProgress, error)
 	UpdateCourseProgress(userID int, courseID string, status Status) error
 
-	GetOrCreateLessonProgress(userID int, courseID string, lessonID string) (*LessonProgress, error)
+	CreateLessonProgress(userID int, courseID string, lessonID string, initialExerciseId string) (*LessonProgress, error)
+	GetLessonProgress(userID int, courseID, lessonID string) (*LessonProgress, error)
 	UpdateLessonProgress(userID int, courseID string, lessonID string, status Status) error
 
 	RecordExerciseAttempt(attempt *ExerciseAttempt) error

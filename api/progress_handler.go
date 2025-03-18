@@ -84,15 +84,29 @@ func (s *Server) handleGetLessonProgress() http.HandlerFunc {
 			return
 		}
 
-		progress, err := s.ProgressService.GetOrCreateLessonProgress(userID, courseID, lessonID)
-		if err != nil {
+		prog, err := s.ProgressService.GetLessonProgress(userID, courseID, lessonID)
+		if err == progress.ErrNoProgress {
+			course, err := s.CourseService.GetCourseByID(courseID)
+			if err != nil {
+				s.logger.Warn("could not find course", "courseID", courseID)
+				http.Error(w, "could not find course", http.StatusBadRequest)
+				return
+			}
+
+			prog, err = s.ProgressService.CreateLessonProgress(userID, courseID, lessonID, course.Lessons[0].ID)
+			if err != nil {
+				s.logger.Warn("could not create lesson progress", "error", err)
+				http.Error(w, "could not find course", http.StatusBadRequest)
+				return
+			}
+		} else if err != nil {
 			s.logger.Warn("Failed to get lesson progress", "error", err)
 			http.Error(w, fmt.Sprintf("Failed to get lesson progress: %v", err), http.StatusInternalServerError)
 			return
 		}
 
 		w.Header().Set("Content-Type", "application/json")
-		if err := json.NewEncoder(w).Encode(progress); err != nil {
+		if err := json.NewEncoder(w).Encode(prog); err != nil {
 			s.logger.Error("Failed to encode response", "error", err)
 			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
 			return
