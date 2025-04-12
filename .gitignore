@@ -26,3 +26,7 @@ go.work.sum
 
 # Except for the specific .env file
 !.env
+
+# DS_Stores
+.DS_Store
+**/.DS_Store
