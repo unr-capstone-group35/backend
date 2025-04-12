@@ -47,6 +47,11 @@ func NewServer(userService user.Service, courseService course.Service, progressS
 	s.Mux.Handle("POST /api/courses/{courseID}/lessons/{lessonID}/progress", dbAuth(s.handleUpdateLessonProgress()))
 	s.Mux.Handle("POST /api/courses/{courseID}/lessons/{lessonID}/exercises/{exerciseID}/attempt", dbAuth(s.handleExerciseAttempt()))
 
+	// Profile picture endpoints (protected)
+	s.Mux.Handle("GET /api/users/profilepic", dbAuth(s.handleGetProfilePic()))
+	s.Mux.Handle("PUT /api/users/profilepic", dbAuth(s.handleUpdateProfilePic()))
+	s.Mux.Handle("POST /api/users/profilepic/upload", dbAuth(s.handleUploadProfilePic()))
+
 	return s
 }
 

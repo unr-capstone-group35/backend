@@ -145,3 +145,7 @@ ALTER TABLE user_achievements
 DROP CONSTRAINT user_achievements_user_id_fkey,
 ADD CONSTRAINT user_achievements_user_id_fkey 
 FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+
+ALTER TABLE users 
+ADD COLUMN profile_pic_id VARCHAR(50) DEFAULT 'default',
+ADD COLUMN custom_profile_pic BYTEA DEFAULT NULL;
