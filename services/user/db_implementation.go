@@ -45,6 +45,37 @@ func (s *service) List() ([]*User, error) {
 	return users, nil
 }
 
+// Update the existing Get method to include the profile_pic_id
+func (s *service) Get(username string) (*User, error) {
+	user := &User{}
+
+	query := `
+		SELECT id, username, email, password_hash, profile_pic_id, created_at, updated_at
+		FROM users
+		WHERE username = $1`
+
+	err := s.db.QueryRow(query, username).Scan(
+		&user.ID,
+		&user.Username,
+		&user.Email,
+		&user.PasswordHash,
+		&user.ProfilePicID,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+	)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			err = ErrNoUser
+		}
+
+		return nil, err
+	}
+
+	return user, nil
+}
+
+// Update the existing Create method to set default profile_pic_id
 func (s *service) Create(username, email, password string) (*User, error) {
 	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
 	if err != nil {
@@ -55,14 +86,15 @@ func (s *service) Create(username, email, password string) (*User, error) {
 		Username:     username,
 		Email:        email,
 		PasswordHash: string(hashedPassword),
+		ProfilePicID: "default", // Set default profile pic
 	}
 
 	query := `
-		INSERT INTO users (username, email, password_hash)
-		VALUES ($1, $2, $3)
+		INSERT INTO users (username, email, password_hash, profile_pic_id)
+		VALUES ($1, $2, $3, $4)
 		RETURNING id, created_at, updated_at`
 
-	err = s.db.QueryRow(query, username, email, string(hashedPassword)).Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
+	err = s.db.QueryRow(query, username, email, string(hashedPassword), "default").Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
 	if err != nil {
 		// Check for unique constraint violations
 		if pqErr, ok := err.(*pq.Error); ok {
@@ -73,27 +105,6 @@ func (s *service) Create(username, email, password string) (*User, error) {
 				return nil, ErrEmailTaken
 			}
 		}
-		return nil, err
-	}
-
-	return user, nil
-}
-
-func (s *service) Get(username string) (*User, error) {
-	user := &User{}
-
-	query := `
-		SELECT id, username, email, password_hash, created_at, updated_at
-		FROM users
-		WHERE username = $1`
-
-	err := s.db.QueryRow(query, username).Scan(&user.ID, &user.Username, &user.Email, &user.PasswordHash, &user.CreatedAt, &user.UpdatedAt)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			err = ErrNoUser
-		}
-
 		return nil, err
 	}
 
@@ -204,70 +215,4 @@ func (s *service) GetProfilePic(username string) ([]byte, string, error) {
 	}
 
 	return customPic, profilePicID, nil
-}
-
-// Update the existing Get method to include the profile_pic_id
-func (s *service) Get(username string) (*User, error) {
-	user := &User{}
-
-	query := `
-		SELECT id, username, email, password_hash, profile_pic_id, created_at, updated_at
-		FROM users
-		WHERE username = $1`
-
-	err := s.db.QueryRow(query, username).Scan(
-		&user.ID,
-		&user.Username,
-		&user.Email,
-		&user.PasswordHash,
-		&user.ProfilePicID,
-		&user.CreatedAt,
-		&user.UpdatedAt,
-	)
-
-	if err != nil {
-		if err == sql.ErrNoRows {
-			err = ErrNoUser
-		}
-
-		return nil, err
-	}
-
-	return user, nil
-}
-
-// Update the existing Create method to set default profile_pic_id
-func (s *service) Create(username, email, password string) (*User, error) {
-	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
-	if err != nil {
-		return nil, err
-	}
-
-	user := &User{
-		Username:     username,
-		Email:        email,
-		PasswordHash: string(hashedPassword),
-		ProfilePicID: "default", // Set default profile pic
-	}
-
-	query := `
-		INSERT INTO users (username, email, password_hash, profile_pic_id)
-		VALUES ($1, $2, $3, $4)
-		RETURNING id, created_at, updated_at`
-
-	err = s.db.QueryRow(query, username, email, string(hashedPassword), "default").Scan(&user.ID, &user.CreatedAt, &user.UpdatedAt)
-	if err != nil {
-		// Check for unique constraint violations
-		if pqErr, ok := err.(*pq.Error); ok {
-			switch pqErr.Constraint {
-			case "users_username_key":
-				return nil, ErrUsernameTaken
-			case "users_email_key":
-				return nil, ErrEmailTaken
-			}
-		}
-		return nil, err
-	}
-
-	return user, nil
 }
