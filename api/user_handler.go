@@ -249,9 +249,7 @@ func (s *Server) handleUpdateProfilePic() http.HandlerFunc {
 		}
 
 		// Return success response
-		response := ProfilePicResponse{
-			ProfilePicID: req.ProfilePicID,
-		}
+		response := ProfilePicResponse(req)
 
 		responseJSON, err := json.Marshal(response)
 		if err != nil {
