@@ -30,3 +30,7 @@ go.work.sum
 # DS_Stores
 .DS_Store
 **/.DS_Store
+
+# local scripts
+organize_backend.sh
+ze_backend_files/
