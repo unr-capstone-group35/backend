@@ -174,6 +174,7 @@ func (s *Server) handleCompleteLesson() http.HandlerFunc {
 			return
 		}
 
+		// First update the lesson status to completed
 		err := s.ProgressService.UpdateLessonProgress(userID, courseID, lessonID, progress.StatusCompleted)
 		if err != nil {
 			s.logger.Error("Failed to update lesson progress", "error", err)
@@ -181,11 +182,19 @@ func (s *Server) handleCompleteLesson() http.HandlerFunc {
 			return
 		}
 
+		// Award the completion bonus
 		transaction, err := s.PointsService.AwardLessonCompletionBonus(userID, courseID, lessonID)
 		if err != nil {
 			s.logger.Error("Failed to award lesson completion bonus", "error", err)
 			http.Error(w, "Failed to award completion bonus", http.StatusInternalServerError)
 			return
+		}
+
+		// Reset the streak for this lesson
+		err = s.PointsService.ResetLessonStreak(userID, courseID, lessonID)
+		if err != nil {
+			s.logger.Error("Failed to reset lesson streak", "error", err)
+			// We don't want to fail the whole request just because of streak reset failure
 		}
 
 		w.Header().Set("Content-Type", "application/json")
