@@ -63,7 +63,8 @@ func NewServer(userService user.Service, courseService course.Service, progressS
 	s.Mux.Handle("POST /api/courses/{courseID}/lessons/{lessonID}/progress", dbAuth(s.handleUpdateLessonProgress()))
 
 	// Exercise attempt handler with points included
-	s.Mux.Handle("POST /api/courses/{courseID}/lessons/{lessonID}/exercises/{exerciseID}/attempt", dbAuth(s.handleExerciseAttemptWithPoints()))
+	s.Mux.Handle("POST /api/courses/{courseID}/lessons/{lessonID}/exercises/{exerciseID}/attempt", dbAuth(s.handleExerciseAttempt()))
+	s.Mux.Handle("POST /api/courses/{courseID}/lessons/{lessonID}/exercises/{exerciseID}/points", dbAuth(s.handleExerciseAttemptPoints()))
 
 	// Points and gamification routes
 	s.Mux.Handle("GET /api/points/summary", dbAuth(s.handleGetPointsSummary()))

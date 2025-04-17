@@ -197,6 +197,115 @@ func (s *Server) handleCompleteLesson() http.HandlerFunc {
 	}
 }
 
+func (s *Server) handleExerciseAttemptPoints() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req ExerciseAttemptRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			s.logger.Warn("Error decoding request body", "error", err)
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		courseID := r.PathValue("courseID")
+		lessonID := r.PathValue("lessonID")
+		exerciseID := r.PathValue("exerciseID")
+
+		s.logger.Debug("Received exercise attempt with points",
+			"courseID", courseID,
+			"lessonID", lessonID,
+			"exerciseID", exerciseID,
+			"answer", req.Answer)
+
+		if courseID == "" || lessonID == "" || exerciseID == "" {
+			http.Error(w, "Course ID, lesson ID, and exercise ID are required", http.StatusBadRequest)
+			return
+		}
+
+		userID, ok := s.GetUserID(r.Context())
+		if !ok {
+			http.Error(w, "User not found in context", http.StatusUnauthorized)
+			return
+		}
+
+		// Verify the answer
+		isCorrect, err := s.CourseService.VerifyExerciseAnswer(courseID, lessonID, exerciseID, req.Answer)
+		if err != nil {
+			http.Error(w, "Failed to verify exercise answer", http.StatusInternalServerError)
+			return
+		}
+
+		// Record attempt in the database
+		answerJSON, err := json.Marshal(req.Answer)
+		if err != nil {
+			http.Error(w, "Failed to process answer data", http.StatusInternalServerError)
+			return
+		}
+
+		attempt := &progress.ExerciseAttempt{
+			UserID:     userID,
+			CourseID:   courseID,
+			LessonID:   lessonID,
+			ExerciseID: exerciseID,
+			Answer:     string(answerJSON),
+			IsCorrect:  isCorrect,
+		}
+
+		if err := s.ProgressService.RecordExerciseAttempt(attempt); err != nil {
+			http.Error(w, "Failed to record exercise attempt", http.StatusInternalServerError)
+			return
+		}
+
+		// Process points based on the answer correctness
+		var transaction *points.PointTransaction
+		if isCorrect {
+			transaction, err = s.PointsService.AwardPointsForCorrectAnswer(userID, courseID, lessonID, exerciseID, true)
+			if err != nil {
+				s.logger.Error("Failed to award points for correct answer", "error", err)
+			}
+		} else {
+			// For incorrect answers, update the streak (reset to 0)
+			_, err = s.PointsService.AwardPointsForCorrectAnswer(userID, courseID, lessonID, exerciseID, false)
+			if err != nil {
+				s.logger.Error("Failed to update streak for incorrect answer", "error", err)
+			}
+		}
+
+		// Get updated lesson points information
+		lessonPoints, err := s.PointsService.GetLessonPoints(userID, courseID, lessonID)
+		if err != nil {
+			s.logger.Error("Failed to get updated lesson points", "error", err)
+		}
+
+		// Prepare response with points information
+		response := struct {
+			IsCorrect     bool                     `json:"isCorrect"`
+			Points        int                      `json:"points,omitempty"`
+			Transaction   *points.PointTransaction `json:"transaction,omitempty"`
+			CurrentStreak int                      `json:"currentStreak"`
+			MaxStreak     int                      `json:"maxStreak"`
+		}{
+			IsCorrect: isCorrect,
+		}
+
+		if transaction != nil {
+			response.Points = transaction.Points
+			response.Transaction = transaction
+		}
+
+		if lessonPoints != nil {
+			response.CurrentStreak = lessonPoints.CurrentStreak
+			response.MaxStreak = lessonPoints.MaxStreak
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		if err := json.NewEncoder(w).Encode(response); err != nil {
+			s.logger.Error("Failed to encode response", "error", err)
+			http.Error(w, "Failed to encode response", http.StatusInternalServerError)
+			return
+		}
+	}
+}
+
 // Enhance the existing exercise attempt handler to award points
 // This modifies the existing function in progress_handler.go
 func (s *Server) handleExerciseAttemptWithPoints() http.HandlerFunc {
