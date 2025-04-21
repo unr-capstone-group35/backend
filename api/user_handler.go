@@ -1,11 +1,17 @@
 package api
 
 import (
+	"context"
 	"encoding/json"
 	"errors"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
+
+	vision "cloud.google.com/go/vision/apiv1"
+
+	visionpb "cloud.google.com/go/vision/v2/apiv1/visionpb" // Import the correct protobuf package path
 
 	"github.com/tylerolson/capstone-backend/services/user"
 )
@@ -298,6 +304,23 @@ func (s *Server) handleUploadProfilePic() http.HandlerFunc {
 			return
 		}
 
+		// Detect safe search results
+		safeSearchResults, err := s.detectSafeSearch(imageData)
+		if err != nil {
+			s.logger.Error("Error detecting safe search", "error", err)
+			http.Error(w, "Failed to detect safe search", http.StatusInternalServerError)
+			return
+		}
+
+		// Check if the results violate our tolerance, possible or higher should be flagged
+		// Since we are an education app for all ages, we should have a low tolerance
+		violation := safeSearchThreshhold(safeSearchResults, 3)
+		if violation {
+			s.logger.Warn("Found offensive content")
+			http.Error(w, "Found offensive content in profile picture.", http.StatusForbidden)
+			return
+		}
+
 		// Store image
 		err = s.UserService.UploadProfilePic(username, imageData)
 		if err != nil {
@@ -321,4 +344,60 @@ func (s *Server) handleUploadProfilePic() http.HandlerFunc {
 		w.Header().Set("Content-Type", "application/json")
 		w.Write(responseJSON)
 	}
+}
+
+func (s *Server) detectSafeSearch(imageData []byte) (*visionpb.SafeSearchAnnotation, error) {
+	ctx := context.Background()
+
+	// Create a new Vision client
+	client, err := vision.NewImageAnnotatorClient(ctx)
+	if err != nil {
+		return nil, fmt.Errorf("failed to create client: %w", err)
+	}
+	defer client.Close()
+
+	image := &visionpb.Image{Content: imageData}
+
+	// Create a feature request for Safe Search detection using the visionpb type
+	features := []*visionpb.Feature{
+		{Type: visionpb.Feature_SAFE_SEARCH_DETECTION},
+	}
+
+	// Create the AnnotateImageRequest using the visionpb type
+	req := &visionpb.AnnotateImageRequest{
+		Image:    image,
+		Features: features,
+	}
+
+	resp, err := client.AnnotateImage(ctx, req)
+	if err != nil {
+		return nil, fmt.Errorf("failed to annotate image: %w", err)
+	}
+	if resp.SafeSearchAnnotation != nil {
+		props := resp.SafeSearchAnnotation
+		s.logger.Debug("Safe Search properties:", "Adult:", props.Adult, "Medical:", props.Medical, "Spoof:", props.Spoof, "Violence:", props.Violence, "Racy:", props.Racy)
+		return props, nil
+	} else {
+		s.logger.Debug("No Safe Search annotation found.")
+	}
+
+	return nil, nil
+}
+
+// safeSearchThreshhold() takes in a safeSearchThreshhold and check if any of its resuls violate
+// the threshhold. If they do then return true.
+func safeSearchThreshhold(a *visionpb.SafeSearchAnnotation, threshhold visionpb.Likelihood) bool {
+	if a.Adult >= threshhold {
+		return true
+	} else if a.Medical >= threshhold {
+		return true
+	} else if a.Racy >= threshhold {
+		return true
+	} else if a.Spoof >= threshhold {
+		return true
+	} else if a.Violence >= threshhold {
+		return true
+	}
+
+	return false
 }
