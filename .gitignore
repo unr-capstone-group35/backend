@@ -34,3 +34,6 @@ go.work.sum
 # local scripts
 organize_backend.sh
 ze_backend_files/
+
+# Google API keys
+capstone-unr-426-d9b7b993ba47.json
