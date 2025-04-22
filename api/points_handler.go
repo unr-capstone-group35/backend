@@ -430,10 +430,10 @@ func (s *Server) handleGetLeaderboard() http.HandlerFunc {
 		}
 
 		rows, err := s.db.Query(`
-			SELECT id, username, total_points, profile_picture
-			FROM users
-			ORDER BY total_points DESC
-			LIMIT $1`, limit)
+            SELECT id, username, total_points, profile_pic_id
+            FROM users
+            ORDER BY total_points DESC
+            LIMIT $1`, limit)
 		if err != nil {
 			s.logger.Error("Failed to query leaderboard", "error", err)
 			http.Error(w, "Failed to get leaderboard", http.StatusInternalServerError)
@@ -454,15 +454,15 @@ func (s *Server) handleGetLeaderboard() http.HandlerFunc {
 
 		for rows.Next() {
 			var entry LeaderboardEntry
-			var profilePicture sql.NullString
+			var profilePicID sql.NullString
 
-			if err := rows.Scan(&entry.UserID, &entry.Username, &entry.TotalPoints, &profilePicture); err != nil {
+			if err := rows.Scan(&entry.UserID, &entry.Username, &entry.TotalPoints, &profilePicID); err != nil {
 				s.logger.Error("Failed to scan leaderboard row", "error", err)
 				continue
 			}
 
-			if profilePicture.Valid {
-				entry.ProfilePicture = profilePicture.String
+			if profilePicID.Valid {
+				entry.ProfilePicture = profilePicID.String
 			}
 
 			entry.Rank = rank
