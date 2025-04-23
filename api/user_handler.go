@@ -50,6 +50,15 @@ type ProfilePicResponse struct {
 	ProfilePicID string `json:"profilePicId"`
 }
 
+type RequestPasswordResetRequest struct {
+	Email string `json:"email"`
+}
+
+type ResetPasswordRequest struct {
+	Token       string `json:"token"`
+	NewPassword string `json:"newPassword"`
+}
+
 // handleListUsers returns a list of all users (admin functionality)
 func (s *Server) handleListUsers() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
@@ -428,4 +437,92 @@ func safeSearchThreshhold(a *visionpb.SafeSearchAnnotation, threshhold visionpb.
 	}
 
 	return false
+}
+
+// handleRequestPasswordReset initiates a password reset
+func (s *Server) handleRequestPasswordReset() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req RequestPasswordResetRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			s.logger.Debug("Invalid request body for password reset", "error", err)
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		if req.Email == "" {
+			http.Error(w, "Email is required", http.StatusBadRequest)
+			return
+		}
+
+		s.logger.Debug("Processing password reset request", "email", req.Email)
+		err := s.UserService.RequestPasswordReset(req.Email)
+		if err != nil {
+			s.logger.Error("Failed to process password reset request", "error", err)
+			http.Error(w, "Failed to process password reset request", http.StatusInternalServerError)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "If your email is registered, you will receive reset instructions shortly",
+		})
+	}
+}
+
+// handleVerifyResetToken checks if a reset token is valid
+func (s *Server) handleVerifyResetToken() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		token := r.PathValue("token")
+		if token == "" {
+			http.Error(w, "Token is required", http.StatusBadRequest)
+			return
+		}
+
+		user, err := s.UserService.VerifyResetToken(token)
+		if err != nil {
+			s.logger.Debug("Invalid reset token", "error", err)
+			http.Error(w, "Invalid or expired token", http.StatusBadRequest)
+			return
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		json.NewEncoder(w).Encode(map[string]string{
+			"email": user.Email,
+			"token": token,
+		})
+	}
+}
+
+// handleResetPassword resets a user's password with a valid token
+func (s *Server) handleResetPassword() http.HandlerFunc {
+	return func(w http.ResponseWriter, r *http.Request) {
+		var req ResetPasswordRequest
+		if err := json.NewDecoder(r.Body).Decode(&req); err != nil {
+			s.logger.Debug("Invalid request body for password reset", "error", err)
+			http.Error(w, "Invalid request body", http.StatusBadRequest)
+			return
+		}
+
+		if req.Token == "" || req.NewPassword == "" {
+			http.Error(w, "Token and new password are required", http.StatusBadRequest)
+			return
+		}
+
+		if len(req.NewPassword) < 8 {
+			http.Error(w, "Password must be at least 8 characters long", http.StatusBadRequest)
+			return
+		}
+
+		err := s.UserService.ResetPassword(req.Token, req.NewPassword)
+		if err != nil {
+			s.logger.Error("Failed to reset password", "error", err)
+			http.Error(w, "Failed to reset password", http.StatusBadRequest)
+			return
+		}
+
+		w.WriteHeader(http.StatusOK)
+		json.NewEncoder(w).Encode(map[string]string{
+			"message": "Password has been reset successfully",
+		})
+	}
 }

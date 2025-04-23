@@ -1,14 +1,28 @@
 package user
 
 import (
+	"context"
+	"crypto/rand"
 	"database/sql"
+	"encoding/base64"
+	"errors"
+	"fmt"
+	"log"
+	"time"
 
 	"github.com/lib/pq"
+	"github.com/mrz1836/postmark"
 	"golang.org/x/crypto/bcrypt"
 )
 
 type service struct {
 	db *sql.DB
+}
+
+var postmarkClient *postmark.Client
+
+func SetPostmarkClient(client *postmark.Client) {
+	postmarkClient = client
 }
 
 func NewService(database *sql.DB) Service {
@@ -215,4 +229,125 @@ func (s *service) GetProfilePic(username string) ([]byte, string, error) {
 	}
 
 	return customPic, profilePicID, nil
+}
+
+// RequestPasswordReset creates a password reset token and sends an email
+func (s *service) RequestPasswordReset(email string) error {
+	var userID int
+	var username string
+
+	err := s.db.QueryRow("SELECT id, username FROM users WHERE email = $1", email).Scan(&userID, &username)
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil
+		}
+		return err
+	}
+
+	token := make([]byte, 32)
+	_, err = rand.Read(token)
+	if err != nil {
+		return err
+	}
+
+	resetToken := base64.URLEncoding.EncodeToString(token)
+
+	expiresAt := time.Now().Add(24 * time.Hour)
+
+	_, err = s.db.Exec("DELETE FROM password_reset_tokens WHERE user_id = $1", userID)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(
+		"INSERT INTO password_reset_tokens (user_id, token, expires_at) VALUES ($1, $2, $3)",
+		userID, resetToken, expiresAt,
+	)
+	if err != nil {
+		return err
+	}
+
+	if postmarkClient != nil {
+		resetURL := fmt.Sprintf("http://localhost:3000/reset-password/%s", resetToken)
+
+		email := postmark.Email{
+			From:          "jasonparmar@unr.edu",
+			To:            email,
+			Subject:       "DevQuest Password Reset",
+			TextBody:      fmt.Sprintf("Hello %s,\n\nWe received a request to reset your password. If you didn't make this request, you can ignore this email.\n\nTo reset your password, please click the link below:\n\n%s\n\nThis link will expire in 24 hours.\n\nThank you,\nDevQuest Team", username, resetURL),
+			HTMLBody:      fmt.Sprintf("<p>Hello %s,</p><p>We received a request to reset your password. If you didn't make this request, you can ignore this email.</p><p>To reset your password, please click the link below:</p><p><a href=\"%s\">Reset Password</a></p><p>This link will expire in 24 hours.</p><p>Thank you,<br>DevQuest Team</p>", username, resetURL),
+			MessageStream: "outbound",
+		}
+
+		_, err = postmarkClient.SendEmail(context.Background(), email)
+		if err != nil {
+			return err
+		}
+	} else {
+		log.Printf("Password reset requested for user ID %d. Token: %s", userID, resetToken)
+	}
+
+	return nil
+}
+
+// VerifyResetToken checks if a token is valid and returns the associated user
+func (s *service) VerifyResetToken(token string) (*User, error) {
+	var userID int
+	var expiresAt time.Time
+
+	err := s.db.QueryRow(
+		"SELECT user_id, expires_at FROM password_reset_tokens WHERE token = $1",
+		token,
+	).Scan(&userID, &expiresAt)
+
+	if err != nil {
+		if err == sql.ErrNoRows {
+			return nil, errors.New("invalid or expired token")
+		}
+		return nil, err
+	}
+
+	if time.Now().After(expiresAt) {
+		return nil, errors.New("token has expired")
+	}
+
+	var user User
+	err = s.db.QueryRow(
+		"SELECT id, username, email, profile_pic_id, created_at, updated_at FROM users WHERE id = $1",
+		userID,
+	).Scan(&user.ID, &user.Username, &user.Email, &user.ProfilePicID, &user.CreatedAt, &user.UpdatedAt)
+
+	if err != nil {
+		return nil, err
+	}
+
+	return &user, nil
+}
+
+// ResetPassword resets a user's password using a valid token
+func (s *service) ResetPassword(token string, newPassword string) error {
+	user, err := s.VerifyResetToken(token)
+	if err != nil {
+		return err
+	}
+
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec(
+		"UPDATE users SET password_hash = $1, updated_at = CURRENT_TIMESTAMP WHERE id = $2",
+		string(hashedPassword), user.ID,
+	)
+	if err != nil {
+		return err
+	}
+
+	_, err = s.db.Exec("DELETE FROM password_reset_tokens WHERE token = $1", token)
+	if err != nil {
+		return err
+	}
+
+	return nil
 }

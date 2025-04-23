@@ -57,6 +57,11 @@ func NewServer(userService user.Service, courseService course.Service, progressS
 	s.Mux.Handle("GET /api/courses/{courseID}", dbAuth(s.handleGetCourse()))
 	s.Mux.Handle("GET /api/courses/{courseID}/lessons/{lessonID}", dbAuth(s.handleGetLesson()))
 
+	// Password reset routes (public)
+	s.Mux.Handle("POST /api/reset-password/request", s.handleRequestPasswordReset())
+	s.Mux.Handle("GET /api/reset-password/verify/{token}", s.handleVerifyResetToken())
+	s.Mux.Handle("POST /api/reset-password/reset", s.handleResetPassword())
+
 	// Progress tracking routes (protected)
 	s.Mux.Handle("GET /api/courses/{courseID}/progress", dbAuth(s.handleGetCourseProgress()))
 	s.Mux.Handle("GET /api/courses/{courseID}/lessons/{lessonID}/progress", dbAuth(s.handleGetLessonProgress()))

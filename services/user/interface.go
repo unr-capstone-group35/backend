@@ -22,6 +22,13 @@ type User struct {
 	UpdatedAt    time.Time `json:"updatedAt"`
 }
 
+type ResetToken struct {
+	UserID    int       `json:"userId"`
+	Email     string    `json:"email"`
+	Token     string    `json:"token"`
+	ExpiresAt time.Time `json:"expiresAt"`
+}
+
 type Service interface {
 	Create(username, email, password string) (*User, error)
 	List() ([]*User, error)
@@ -29,8 +36,13 @@ type Service interface {
 	DeleteUser(username string) error
 	Authenticate(username, password string) (*User, error)
 
-	// New methods for profile pictures
+	// profile pictures
 	UpdateProfilePic(username, profilePicID string) error
 	UploadProfilePic(username string, imageData []byte) error
 	GetProfilePic(username string) ([]byte, string, error)
+
+	// password reset
+	RequestPasswordReset(email string) error
+	VerifyResetToken(token string) (*User, error)
+	ResetPassword(token string, newPassword string) error
 }

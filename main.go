@@ -10,6 +10,7 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
+	"github.com/mrz1836/postmark"
 	"github.com/tylerolson/capstone-backend/api"
 	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/db"
@@ -60,6 +61,16 @@ func main() {
 		CourseCompletionBonus: 500, // 500 points for completing a course
 	}
 	pointsService.SetPointsConfig(pointsConfig)
+
+	postmarkAPIKey := os.Getenv("POSTMARK_API_KEY")
+	if postmarkAPIKey != "" {
+		logger.Info("Initializing Postmark client")
+		// Create a new Postmark client with the server token
+		postmarkClient := postmark.NewClient(postmarkAPIKey, "")
+		user.SetPostmarkClient(postmarkClient)
+	} else {
+		logger.Warn("No Postmark API key provided - password reset emails will only be logged")
+	}
 
 	// Initialize course store with database
 	coursesStore := course.NewJSONStore("./data")
