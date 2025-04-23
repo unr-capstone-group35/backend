@@ -13,6 +13,7 @@ import (
 
 	visionpb "cloud.google.com/go/vision/v2/apiv1/visionpb" // Import the correct protobuf package path
 
+	"github.com/tylerolson/capstone-backend/services/points"
 	"github.com/tylerolson/capstone-backend/services/user"
 )
 
@@ -141,8 +142,14 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 			return
 		}
 
-		// Send response with session token
-		w.Header().Set("Content-Type", "application/json")
+		// Update daily streak
+		transaction, err := s.PointsService.UpdateDailyStreak(user.ID)
+		if err != nil {
+			s.logger.Error("Failed to update daily streak", "error", err)
+			// Don't fail the whole sign-in process if streak update fails
+		}
+
+		// Prepare response
 		response := SignInResponse{
 			Username:  user.Username,
 			Email:     user.Email,
@@ -150,6 +157,27 @@ func (s *Server) handleSignIn() http.HandlerFunc {
 			ExpiresAt: session.ExpiresAt.Format(time.RFC3339),
 		}
 
+		// If streak update resulted in points, include that info
+		if transaction != nil {
+			response := struct {
+				SignInResponse
+				StreakTransaction *points.PointTransaction `json:"streakTransaction,omitempty"`
+			}{
+				SignInResponse:    response,
+				StreakTransaction: transaction,
+			}
+
+			w.Header().Set("Content-Type", "application/json")
+			if err := json.NewEncoder(w).Encode(response); err != nil {
+				s.logger.Error("Error encoding sign in response", "err", err)
+				http.Error(w, "Error encoding response", http.StatusInternalServerError)
+				return
+			}
+			return
+		}
+
+		// Regular response without streak transaction
+		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(response); err != nil {
 			s.logger.Error("Error encoding sign in response", "err", err)
 			http.Error(w, "Error encoding response", http.StatusInternalServerError)

@@ -264,6 +264,11 @@ func (s *Server) handleExerciseAttemptPoints() http.HandlerFunc {
 			return
 		}
 
+		// Update accuracy statistics
+		if err := s.PointsService.UpdateAccuracyStats(userID, isCorrect); err != nil {
+			s.logger.Error("Failed to update accuracy stats", "error", err)
+		}
+
 		// Process points based on the answer correctness
 		var transaction *points.PointTransaction
 		if isCorrect {
@@ -285,15 +290,32 @@ func (s *Server) handleExerciseAttemptPoints() http.HandlerFunc {
 			s.logger.Error("Failed to get updated lesson points", "error", err)
 		}
 
-		// Prepare response with points information
+		// Get updated accuracy statistics
+		accuracyStats, err := s.PointsService.GetAccuracyStats(userID)
+		if err != nil {
+			s.logger.Error("Failed to get updated accuracy stats", "error", err)
+			// Create a default value if we couldn't retrieve the stats
+			accuracyStats = &points.AccuracyStats{
+				UserID:        userID,
+				TotalAttempts: 0,
+				AccuracyRate:  0,
+			}
+		}
+
 		response := struct {
-			IsCorrect     bool                     `json:"isCorrect"`
-			Points        int                      `json:"points,omitempty"`
-			Transaction   *points.PointTransaction `json:"transaction,omitempty"`
-			CurrentStreak int                      `json:"currentStreak"`
-			MaxStreak     int                      `json:"maxStreak"`
+			IsCorrect       bool                     `json:"isCorrect"`
+			Points          int                      `json:"points,omitempty"`
+			Transaction     *points.PointTransaction `json:"transaction,omitempty"`
+			CurrentStreak   int                      `json:"currentStreak"`
+			MaxStreak       int                      `json:"maxStreak"`
+			AccuracyRate    float64                  `json:"accuracyRate"`
+			TotalAttempts   int                      `json:"totalAttempts"`
+			CorrectAttempts int                      `json:"correctAttempts"`
 		}{
-			IsCorrect: isCorrect,
+			IsCorrect:       isCorrect,
+			AccuracyRate:    accuracyStats.AccuracyRate,
+			TotalAttempts:   accuracyStats.TotalAttempts,
+			CorrectAttempts: accuracyStats.CorrectAttempts,
 		}
 
 		if transaction != nil {
@@ -315,7 +337,6 @@ func (s *Server) handleExerciseAttemptPoints() http.HandlerFunc {
 	}
 }
 
-// Enhance the existing exercise attempt handler to award points
 // This modifies the existing function in progress_handler.go
 func (s *Server) handleExerciseAttemptWithPoints() http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {

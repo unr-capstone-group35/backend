@@ -1,55 +1,53 @@
 package points
 
-import (
-	"errors"
-	"time"
-)
+import "time"
 
-var (
-	ErrNoTransaction = errors.New("transaction does not exist")
-)
-
-// TransactionType defines the different ways users can earn points
-type TransactionType string
-
+// Define transaction types
 const (
-	// Different types of point transactions
-	TransactionTypeCorrectAnswer   TransactionType = "correct_answer"
-	TransactionTypeStreakBonus     TransactionType = "streak_bonus"
-	TransactionTypeLessonCompleted TransactionType = "lesson_completed"
-	TransactionTypeCourseCompleted TransactionType = "course_completed"
+	TransactionTypeCorrectAnswer    = "correct_answer"
+	TransactionTypeLessonCompleted  = "lesson_completed"
+	TransactionTypeCourseCompleted  = "course_completed"
+	TransactionTypeDailyStreakBonus = "daily_streak_bonus"
 )
 
 // PointsConfig defines the point values for different actions
 type PointsConfig struct {
-	CorrectAnswerPoints   int // Base points for a correct answer
-	StreakBonusMultiplier int // Multiplier for consecutive correct answers
-	MaxStreakBonus        int // Maximum streak bonus possible
-	LessonCompletionBonus int // Bonus points for completing a lesson
-	CourseCompletionBonus int // Bonus points for completing a course
+	CorrectAnswerPoints      int
+	StreakBonusMultiplier    int
+	MaxStreakBonus           int
+	LessonCompletionBonus    int
+	CourseCompletionBonus    int
+	DailyStreakBonusPoints   int
+	DailyStreakMilestones    []int // Milestones for extra bonuses (e.g., [7, 30, 365])
+	MilestoneBonusMultiplier int   // Multiplier for milestone bonuses
 }
 
-// Default point values
+// Default point configuration
 var DefaultPointsConfig = PointsConfig{
-	CorrectAnswerPoints:   10,
-	StreakBonusMultiplier: 1,
-	MaxStreakBonus:        50,
-	LessonCompletionBonus: 100,
-	CourseCompletionBonus: 500,
+	CorrectAnswerPoints:      10,
+	StreakBonusMultiplier:    2,
+	MaxStreakBonus:           50,
+	LessonCompletionBonus:    50,
+	CourseCompletionBonus:    200,
+	DailyStreakBonusPoints:   20,
+	DailyStreakMilestones:    []int{7, 30, 100, 365},
+	MilestoneBonusMultiplier: 5,
 }
 
+// PointTransaction represents a points transaction record
 type PointTransaction struct {
-	ID              int             `json:"id"`
-	UserID          int             `json:"userId"`
-	CourseID        string          `json:"courseId"`
-	LessonID        string          `json:"lessonId"`
-	ExerciseID      string          `json:"exerciseId,omitempty"`
-	TransactionType TransactionType `json:"transactionType"`
-	Points          int             `json:"points"`
-	Description     string          `json:"description,omitempty"`
-	CreatedAt       time.Time       `json:"createdAt"`
+	ID              int       `json:"id"`
+	UserID          int       `json:"userId"`
+	CourseID        string    `json:"courseId"`
+	LessonID        string    `json:"lessonId,omitempty"`
+	ExerciseID      string    `json:"exerciseId,omitempty"`
+	TransactionType string    `json:"transactionType"`
+	Points          int       `json:"points"`
+	Description     string    `json:"description"`
+	CreatedAt       time.Time `json:"createdAt"`
 }
 
+// UserPoints represents a user's total points and streaks
 type UserPoints struct {
 	UserID        int       `json:"userId"`
 	TotalPoints   int       `json:"totalPoints"`
@@ -58,6 +56,7 @@ type UserPoints struct {
 	UpdatedAt     time.Time `json:"updatedAt"`
 }
 
+// LessonPoints represents points and streak for a specific lesson
 type LessonPoints struct {
 	UserID        int       `json:"userId"`
 	CourseID      string    `json:"courseId"`
@@ -68,28 +67,41 @@ type LessonPoints struct {
 	LastAttemptAt time.Time `json:"lastAttemptAt"`
 }
 
+// DailyStreakInfo represents a user's daily streak information
+type DailyStreakInfo struct {
+	UserID          int       `json:"userId"`
+	CurrentStreak   int       `json:"currentStreak"`
+	MaxStreak       int       `json:"maxStreak"`
+	LastLoginDate   time.Time `json:"lastLoginDate"`
+	NextMilestone   int       `json:"nextMilestone,omitempty"`
+	DaysToMilestone int       `json:"daysToMilestone,omitempty"`
+}
+
+// AccuracyStats represents a user's accuracy statistics
+type AccuracyStats struct {
+	UserID          int     `json:"userId"`
+	TotalAttempts   int     `json:"totalAttempts"`
+	CorrectAttempts int     `json:"correctAttempts"`
+	AccuracyRate    float64 `json:"accuracyRate"` // Percentage (0-100)
+}
+
+// Service defines the points service interface
 type Service interface {
-	// Award points for a correct answer and update streak
+	// Existing methods
+	SetPointsConfig(config PointsConfig)
 	AwardPointsForCorrectAnswer(userID int, courseID, lessonID, exerciseID string, isCorrect bool) (*PointTransaction, error)
-
-	// Award bonus points for completing a lesson
 	AwardLessonCompletionBonus(userID int, courseID, lessonID string) (*PointTransaction, error)
-
-	// Award bonus points for completing a course
 	AwardCourseCompletionBonus(userID int, courseID string) (*PointTransaction, error)
-
-	// Reset streak for a specific lesson (typically called when starting a new lesson)
 	ResetLessonStreak(userID int, courseID, lessonID string) error
-
-	// Get user's total points
 	GetUserTotalPoints(userID int) (*UserPoints, error)
-
-	// Get user's points for a specific lesson
 	GetLessonPoints(userID int, courseID, lessonID string) (*LessonPoints, error)
-
-	// Get recent point transactions for a user
 	GetRecentTransactions(userID int, limit int) ([]*PointTransaction, error)
 
-	// Set points configuration
-	SetPointsConfig(config PointsConfig)
+	// New methods for daily streak
+	UpdateDailyStreak(userID int) (*PointTransaction, error)
+	GetDailyStreak(userID int) (*DailyStreakInfo, error)
+
+	// New methods for accuracy tracking
+	UpdateAccuracyStats(userID int, isCorrect bool) error
+	GetAccuracyStats(userID int) (*AccuracyStats, error)
 }

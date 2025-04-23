@@ -72,6 +72,8 @@ func NewServer(userService user.Service, courseService course.Service, progressS
 	s.Mux.Handle("POST /api/courses/{courseID}/complete", dbAuth(s.handleCompleteCourse()))
 	s.Mux.Handle("POST /api/courses/{courseID}/lessons/{lessonID}/complete", dbAuth(s.handleCompleteLesson()))
 	s.Mux.Handle("GET /api/leaderboard", dbAuth(s.handleGetLeaderboard()))
+	s.Mux.Handle("GET /api/stats/daily-streak", dbAuth(s.handleGetDailyStreak()))
+	s.Mux.Handle("GET /api/stats/accuracy", dbAuth(s.handleGetAccuracyStats()))
 
 	// Make sure the profile pictures directory exists
 	if err := EnsureProfilePicDirectory(); err != nil {

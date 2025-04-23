@@ -146,3 +146,12 @@ CREATE TRIGGER update_lesson_progress_timestamp
     EXECUTE FUNCTION update_last_accessed_timestamp();
 
 -- All foreign keys already include ON DELETE CASCADE in their initial definitions
+
+
+-- Add daily streak and accuracy tracking to users table
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS daily_streak INTEGER DEFAULT 0 NOT NULL,
+ADD COLUMN IF NOT EXISTS max_daily_streak INTEGER DEFAULT 0 NOT NULL,
+ADD COLUMN IF NOT EXISTS last_login_date DATE,
+ADD COLUMN IF NOT EXISTS total_attempts INTEGER DEFAULT 0 NOT NULL,
+ADD COLUMN IF NOT EXISTS correct_attempts INTEGER DEFAULT 0 NOT NULL;
