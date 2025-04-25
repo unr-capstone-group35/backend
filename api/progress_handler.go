@@ -91,6 +91,17 @@ func (s *Server) handleGetLessonProgress() http.HandlerFunc {
 			return
 		}
 
+		// If lesson is completed, ensure streak is reset
+		if progress.Status == "completed" {
+			err = s.PointsService.ResetLessonStreak(userID, courseID, lessonID)
+			if err != nil {
+				s.logger.Error("Failed to reset lesson streak", "error", err)
+				// Don't fail the whole request for this
+			}
+			// Refresh the progress data
+			progress, _ = s.ProgressService.GetOrCreateLessonProgress(userID, courseID, lessonID)
+		}
+
 		w.Header().Set("Content-Type", "application/json")
 		if err := json.NewEncoder(w).Encode(progress); err != nil {
 			s.logger.Error("Failed to encode response", "error", err)

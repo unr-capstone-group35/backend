@@ -11,6 +11,7 @@ import (
 	"github.com/tylerolson/capstone-backend/api"
 	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/db"
+	"github.com/tylerolson/capstone-backend/services/points"
 	"github.com/tylerolson/capstone-backend/services/progress"
 	"github.com/tylerolson/capstone-backend/services/session"
 	"github.com/tylerolson/capstone-backend/services/user"
@@ -43,6 +44,7 @@ func setupTestServer(t *testing.T) *api.Server {
 
 	progressService := progress.NewService(database)
 	sessionService := session.NewService(database)
+	pointsService := points.NewService(database)
 
 	// Initialize server with all required dependencies
 	server := api.NewServer(
@@ -50,12 +52,10 @@ func setupTestServer(t *testing.T) *api.Server {
 		coursesStore,
 		progressService,
 		sessionService,
+		pointsService,
+		database,
 		logger,
 	)
-
-	if err != nil {
-		t.Fatal(err)
-	}
 
 	return server
 }

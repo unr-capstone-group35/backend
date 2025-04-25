@@ -10,9 +10,11 @@ import (
 
 	"github.com/joho/godotenv"
 	"github.com/lmittmann/tint"
+	"github.com/mrz1836/postmark"
 	"github.com/tylerolson/capstone-backend/api"
 	"github.com/tylerolson/capstone-backend/course"
 	"github.com/tylerolson/capstone-backend/db"
+	"github.com/tylerolson/capstone-backend/services/points"
 	"github.com/tylerolson/capstone-backend/services/progress"
 	"github.com/tylerolson/capstone-backend/services/session"
 	"github.com/tylerolson/capstone-backend/services/user"
@@ -44,6 +46,31 @@ func main() {
 
 	// Initialize services with database
 	userService := user.NewService(database)
+	progressService := progress.NewService(database)
+	sessionService := session.NewService(database)
+
+	// Initialize the new points service
+	pointsService := points.NewService(database)
+
+	// Configure point values (OPTIONAL - uses defaults if not set)
+	pointsConfig := points.PointsConfig{
+		CorrectAnswerPoints:   10,
+		StreakBonusMultiplier: 2,   // 2 points per streak level
+		MaxStreakBonus:        50,  // Maximum 50 bonus points for streaks
+		LessonCompletionBonus: 100, // 100 points for completing a lesson
+		CourseCompletionBonus: 500, // 500 points for completing a course
+	}
+	pointsService.SetPointsConfig(pointsConfig)
+
+	postmarkAPIKey := os.Getenv("POSTMARK_API_KEY")
+	if postmarkAPIKey != "" {
+		logger.Info("Initializing Postmark client")
+		// Create a new Postmark client with the server token
+		postmarkClient := postmark.NewClient(postmarkAPIKey, "")
+		user.SetPostmarkClient(postmarkClient)
+	} else {
+		logger.Warn("No Postmark API key provided - password reset emails will only be logged")
+	}
 
 	// Initialize course store with database
 	coursesStore := course.NewJSONStore("./data")
@@ -52,8 +79,10 @@ func main() {
 		os.Exit(1)
 	}
 
-	progressService := progress.NewService(database)
-	sessionService := session.NewService(database)
+	if err := api.EnsureProfilePicDirectory(); err != nil {
+		logger.Error("Error creating profile pictures directory", "error", err)
+		os.Exit(1)
+	}
 
 	// Initialize server with all required dependencies
 	server := api.NewServer(
@@ -61,6 +90,8 @@ func main() {
 		coursesStore,
 		progressService,
 		sessionService,
+		pointsService,
+		database,
 		logger,
 	)
 

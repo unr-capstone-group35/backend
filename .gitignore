@@ -26,3 +26,14 @@ go.work.sum
 
 # Except for the specific .env file
 !.env
+
+# DS_Stores
+.DS_Store
+**/.DS_Store
+
+# local scripts
+organize_backend.sh
+ze_backend_files/
+
+# Google API keys
+capstone-unr-426-d9b7b993ba47.json

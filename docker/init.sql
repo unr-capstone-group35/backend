@@ -4,13 +4,24 @@ CREATE TABLE IF NOT EXISTS users (
     username VARCHAR(50) UNIQUE NOT NULL,
     email VARCHAR(255) UNIQUE NOT NULL,
     password_hash VARCHAR(255) NOT NULL,
+    profile_pic_id VARCHAR(100) DEFAULT 'default',
+    custom_profile_pic BYTEA DEFAULT NULL,
+    total_points INTEGER DEFAULT 0 NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
+CREATE TABLE IF NOT EXISTS password_reset_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    token VARCHAR(255) UNIQUE NOT NULL,
+    expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+);
+
 CREATE TABLE IF NOT EXISTS sessions (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     token VARCHAR(255) UNIQUE NOT NULL,
     expires_at TIMESTAMP WITH TIME ZONE NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
@@ -18,12 +29,12 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 -- Function to update user timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $$
+RETURNS TRIGGER AS $
 BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$$ language 'plpgsql';
+$ language 'plpgsql';
 
 -- Create trigger for users table
 CREATE TRIGGER update_user_updated_at
@@ -35,40 +46,59 @@ CREATE TRIGGER update_user_updated_at
 -- Track user's progress in courses
 CREATE TABLE IF NOT EXISTS user_course_progress (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     course_id VARCHAR(100) NOT NULL,  
     status VARCHAR(20) NOT NULL CHECK (status IN ('not_started', 'in_progress', 'completed')),
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_accessed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP WITH TIME ZONE,
+    total_course_points INTEGER DEFAULT 0 NOT NULL,
     UNIQUE(user_id, course_id)
 );
 
 -- Track user's progress in individual lessons
 CREATE TABLE IF NOT EXISTS user_lesson_progress (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     course_id VARCHAR(100) NOT NULL,
     lesson_id VARCHAR(100) NOT NULL,  -- References lesson ID from JSON
     status VARCHAR(20) NOT NULL CHECK (status IN ('not_started', 'in_progress', 'completed')),
     started_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     last_accessed_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     completed_at TIMESTAMP WITH TIME ZONE,
+    total_lesson_points INTEGER DEFAULT 0 NOT NULL,
+    current_streak INTEGER DEFAULT 0 NOT NULL,
+    max_streak INTEGER DEFAULT 0 NOT NULL,
     UNIQUE(user_id, course_id, lesson_id)
 );
 
 -- Track user's exercise attempts and results
 CREATE TABLE IF NOT EXISTS user_exercise_attempts (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     course_id VARCHAR(100) NOT NULL,
     lesson_id VARCHAR(100) NOT NULL,
     exercise_id VARCHAR(100) NOT NULL,
     attempt_number INTEGER NOT NULL,
     answer TEXT NOT NULL,
     is_correct BOOLEAN NOT NULL,
+    points_earned INTEGER DEFAULT 0 NOT NULL,
+    streak_at_attempt INTEGER DEFAULT 0 NOT NULL,
     attempted_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, course_id, lesson_id, exercise_id, attempt_number)
+);
+
+-- Track point transactions
+CREATE TABLE IF NOT EXISTS user_point_transactions (
+    id SERIAL PRIMARY KEY,
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
+    course_id VARCHAR(100) NOT NULL,
+    lesson_id VARCHAR(100) NOT NULL,
+    exercise_id VARCHAR(100),
+    transaction_type VARCHAR(50) NOT NULL,
+    points INTEGER NOT NULL,
+    description TEXT,
+    created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
 
 -- Track user achievements/badges
@@ -81,7 +111,7 @@ CREATE TABLE IF NOT EXISTS achievements (
 
 CREATE TABLE IF NOT EXISTS user_achievements (
     id SERIAL PRIMARY KEY,
-    user_id INTEGER REFERENCES users(id),
+    user_id INTEGER REFERENCES users(id) ON DELETE CASCADE,
     achievement_id INTEGER REFERENCES achievements(id),
     earned_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     UNIQUE(user_id, achievement_id)
@@ -92,6 +122,7 @@ CREATE INDEX IF NOT EXISTS idx_user_course_progress_user ON user_course_progress
 CREATE INDEX IF NOT EXISTS idx_user_lesson_progress_user ON user_lesson_progress(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_exercise_attempts_user ON user_exercise_attempts(user_id);
 CREATE INDEX IF NOT EXISTS idx_user_achievements_user ON user_achievements(user_id);
+CREATE INDEX IF NOT EXISTS idx_user_point_transactions_user ON user_point_transactions(user_id);
 
 -- Add composite indexes for common queries
 CREATE INDEX IF NOT EXISTS idx_lesson_progress_composite 
@@ -99,6 +130,9 @@ ON user_lesson_progress(user_id, course_id, lesson_id);
 
 CREATE INDEX IF NOT EXISTS idx_exercise_attempts_composite 
 ON user_exercise_attempts(user_id, course_id, lesson_id, exercise_id);
+
+CREATE INDEX IF NOT EXISTS idx_point_transactions_composite
+ON user_point_transactions(user_id, course_id, lesson_id);
 
 -- Update timestamp triggers
 CREATE OR REPLACE FUNCTION update_last_accessed_timestamp()
@@ -114,34 +148,18 @@ CREATE TRIGGER update_course_progress_timestamp
     FOR EACH ROW
     EXECUTE FUNCTION update_last_accessed_timestamp();
 
-
 CREATE TRIGGER update_lesson_progress_timestamp
     BEFORE UPDATE ON user_lesson_progress
     FOR EACH ROW
     EXECUTE FUNCTION update_last_accessed_timestamp();
 
--- Add ON DELETE CASCADE to foreign keys, this deletes all references to a user when a user is deleted
-ALTER TABLE sessions 
-DROP CONSTRAINT sessions_user_id_fkey,
-ADD CONSTRAINT sessions_user_id_fkey 
-FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+-- All foreign keys already include ON DELETE CASCADE in their initial definitions
 
-ALTER TABLE user_course_progress 
-DROP CONSTRAINT user_course_progress_user_id_fkey,
-ADD CONSTRAINT user_course_progress_user_id_fkey 
-FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
 
-ALTER TABLE user_lesson_progress 
-DROP CONSTRAINT user_lesson_progress_user_id_fkey,
-ADD CONSTRAINT user_lesson_progress_user_id_fkey 
-FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE user_exercise_attempts 
-DROP CONSTRAINT user_exercise_attempts_user_id_fkey,
-ADD CONSTRAINT user_exercise_attempts_user_id_fkey 
-FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
-
-ALTER TABLE user_achievements 
-DROP CONSTRAINT user_achievements_user_id_fkey,
-ADD CONSTRAINT user_achievements_user_id_fkey 
-FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE;
+-- Add daily streak and accuracy tracking to users table
+ALTER TABLE users
+ADD COLUMN IF NOT EXISTS daily_streak INTEGER DEFAULT 0 NOT NULL,
+ADD COLUMN IF NOT EXISTS max_daily_streak INTEGER DEFAULT 0 NOT NULL,
+ADD COLUMN IF NOT EXISTS last_login_date DATE,
+ADD COLUMN IF NOT EXISTS total_attempts INTEGER DEFAULT 0 NOT NULL,
+ADD COLUMN IF NOT EXISTS correct_attempts INTEGER DEFAULT 0 NOT NULL;
