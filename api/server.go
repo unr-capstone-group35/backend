@@ -2,6 +2,7 @@ package api
 
 import (
 	"database/sql"
+	"fmt"
 	"log/slog"
 	"net/http"
 	"os"
@@ -37,6 +38,10 @@ func NewServer(userService user.Service, courseService course.Service, progressS
 		logger:          logger,
 		db:              database,
 	}
+
+	s.Mux.HandleFunc("GET /api", func(w http.ResponseWriter, r *http.Request) {
+		fmt.Fprint(w, "DevQuest API running")
+	})
 
 	// Public routes
 	s.Mux.Handle("POST /api/signin", s.handleSignIn())

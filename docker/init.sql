@@ -7,6 +7,11 @@ CREATE TABLE IF NOT EXISTS users (
     profile_pic_id VARCHAR(100) DEFAULT 'default',
     custom_profile_pic BYTEA DEFAULT NULL,
     total_points INTEGER DEFAULT 0 NOT NULL,
+    daily_streak INTEGER DEFAULT 0 NOT NULL,
+    max_daily_streak INTEGER DEFAULT 0 NOT NULL,
+    last_login_date DATE,
+    total_attempts INTEGER DEFAULT 0 NOT NULL,
+    correct_attempts INTEGER DEFAULT 0 NOT NULL,
     created_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
 );
@@ -29,12 +34,12 @@ CREATE TABLE IF NOT EXISTS sessions (
 
 -- Function to update user timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
-RETURNS TRIGGER AS $
+RETURNS TRIGGER AS $$
 BEGIN
     NEW.updated_at = CURRENT_TIMESTAMP;
     RETURN NEW;
 END;
-$ language 'plpgsql';
+$$ language 'plpgsql';
 
 -- Create trigger for users table
 CREATE TRIGGER update_user_updated_at
@@ -152,14 +157,3 @@ CREATE TRIGGER update_lesson_progress_timestamp
     BEFORE UPDATE ON user_lesson_progress
     FOR EACH ROW
     EXECUTE FUNCTION update_last_accessed_timestamp();
-
--- All foreign keys already include ON DELETE CASCADE in their initial definitions
-
-
--- Add daily streak and accuracy tracking to users table
-ALTER TABLE users
-ADD COLUMN IF NOT EXISTS daily_streak INTEGER DEFAULT 0 NOT NULL,
-ADD COLUMN IF NOT EXISTS max_daily_streak INTEGER DEFAULT 0 NOT NULL,
-ADD COLUMN IF NOT EXISTS last_login_date DATE,
-ADD COLUMN IF NOT EXISTS total_attempts INTEGER DEFAULT 0 NOT NULL,
-ADD COLUMN IF NOT EXISTS correct_attempts INTEGER DEFAULT 0 NOT NULL;
