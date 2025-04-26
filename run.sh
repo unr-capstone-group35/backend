@@ -13,8 +13,8 @@ cd docker || exit
 
 print_line
 echo "Setting up database container..."
-docker-compose down -v >/dev/null 2>&1
-docker-compose up -d >/dev/null 2>&1
+docker compose down -v >/dev/null 2>&1
+docker compose up -d >/dev/null 2>&1
 
 # Wait for the database to be ready (with minimal output)
 echo "Waiting for database to be ready..."
