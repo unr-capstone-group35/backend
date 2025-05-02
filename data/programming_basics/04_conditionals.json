@@ -6,15 +6,15 @@
     {
       "id": "intro_1",
       "type": "ordering",
-      "question": "Put these programming concepts in order from most basic to most advanced:",
+      "question": "Put these programming concepts in the typical learning order for beginners:",
       "items": [
-        "Variables",
-        "Functions",
-        "Conditional Statements",
-        "Loops",
-        "Practice Projects"
+        "Variables and data types",
+        "Functions and methods",
+        "Conditional statements",
+        "Loops and iterations",
+        "Object-oriented design"
       ],
-      "correctOrder": [0, 1, 2, 3, 4]
+      "correctOrder": [0, 2, 3, 1, 4]
     },
     {
       "id": "intro_2",

@@ -28,10 +28,10 @@
     },
     {
       "id": "stack_3",
-      "type": "ordering",
-      "question": "Order these elements as they would be popped from a stack (last pushed was 5):",
-      "items": ["5", "4", "3", "2", "1"],
-      "correctOrder": [0, 1, 2, 3, 4]
+      "type": "multiple_choice",
+      "question": "Consider a stack with elements pushed in this order: 1, 2, 3, 4, 5 (5 was pushed last). If you call pop() three times, which element will be on top of the stack?",
+      "choices": ["5","4","3","2","1"],
+      "correctAnswer": 3
     }
   ]
 }

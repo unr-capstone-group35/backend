@@ -24,7 +24,7 @@
     {
       "id": "dp_3",
       "type": "matching",
-      "question": "Match DP concepts with their meanings:",
+      "question": "Match the Dynamic Programming concepts with their meanings:",
       "pairs": [
         ["Memoization", "Cache results"],
         ["Tabulation", "Bottom-up approach"],
