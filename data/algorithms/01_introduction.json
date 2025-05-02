@@ -28,16 +28,15 @@
     },
     {
       "id": "algo_intro_3",
-      "type": "ordering",
-      "question": "Order these steps in analyzing an algorithm:",
-      "items": [
-        "Understand the problem",
-        "Analyze time complexity",
-        "Analyze space complexity",
-        "Consider edge cases",
-        "Compare with alternatives"
+      "type": "multiple_choice",
+      "question": "Which of the following metrics is most useful when comparing the efficiency of two algorithms that solve the same problem?",
+      "choices": [
+        "Time complexity (Big O notation)",
+        "Number of code lines",
+        "Development time required",
+        "Programming language used"
       ],
-      "correctOrder": [0, 1, 2, 3, 4]
-    }
+      "correctAnswer": 0
+    } 
   ]
 }

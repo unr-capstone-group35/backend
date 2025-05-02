@@ -12,10 +12,14 @@
     },
     {
       "id": "tree_2",
-      "type": "ordering",
-      "question": "Order these tree traversal types from typically leftmost to rightmost visited nodes:",
-      "items": ["Pre-order", "In-order", "Post-order"],
-      "correctOrder": [0, 1, 2]
+      "type": "matching",
+      "question": "Match each tree traversal type with its processing order:",
+      "pairs": [
+        ["Pre-order", "Node → Left → Right"],
+        ["In-order", "Left → Node → Right"],
+        ["Post-order", "Left → Right → Node"],
+        ["Level-order", "Row by row, left to right"]
+      ]
     },
     {
       "id": "tree_3",

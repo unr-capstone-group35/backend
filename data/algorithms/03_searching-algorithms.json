@@ -18,16 +18,15 @@
     },
     {
       "id": "search_3",
-      "type": "ordering",
-      "question": "Order the steps of binary search:",
-      "items": [
-        "Find middle element",
-        "Compare with target",
-        "If equal, return index",
-        "If greater, search right half",
-        "If less, search left half"
+      "type": "multiple_choice",
+      "question": "In a binary search algorithm, if the target value is less than the middle element, which part of the array should be searched next?",
+      "choices": [
+        "Left half",
+        "Right half",
+        "Middle element again",
+        "Entire array"
       ],
-      "correctOrder": [0, 1, 2, 3, 4]
-    }
+      "correctAnswer": 0
+    }    
   ]
 }
