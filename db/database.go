@@ -10,13 +10,6 @@ import (
 
 // Creates a new database connection. Leave host/port blank for localhost/5433
 func NewDatabase(user, password, dbName, host, port string) (*sql.DB, error) {
-	if host == "" {
-		host = "localhost"
-	}
-
-	if port == "" {
-		port = "5433"
-	}
 	connStr := fmt.Sprintf("host=%s port=%s user=%s password=%s dbname=%s sslmode=disable", host, port, user, password, dbName)
 
 	db, err := sql.Open("postgres", connStr)
@@ -30,7 +23,7 @@ func NewDatabase(user, password, dbName, host, port string) (*sql.DB, error) {
 	db.SetMaxIdleConns(5)
 
 	// Test the connection
-	for i := 0; i < 10; i++ {
+	for range 10 {
 		err = db.Ping()
 		if err == nil {
 			break

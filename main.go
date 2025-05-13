@@ -29,15 +29,19 @@ func main() {
 
 	// Load .env file
 	if err := godotenv.Load(); err != nil {
-		panic(".env not found")
+		logger.Warn(".env not found")
 	}
 
 	// Get database connection details from environment variables
 	dbUser := os.Getenv("POSTGRES_USER")
 	dbPassword := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DB")
+	dbHost := os.Getenv("POSTGRES_HOST")
+	dbPort := os.Getenv("POSTGRES_PORT")
 
-	database, err := db.NewDatabase(dbUser, dbPassword, dbName, "", "")
+	logger.Debug("Got env variables", "user", dbUser, "password", dbPassword, "name", dbName, "host", dbHost, "port", dbPort)
+
+	database, err := db.NewDatabase(dbUser, dbPassword, dbName, dbHost, dbPort)
 	if err != nil {
 		logger.Error("Failed to connect to database", "error", err)
 		os.Exit(1)

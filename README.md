@@ -2,18 +2,19 @@
 
 **Initial setup**
 
-- brew install --cask docker
-- chmod +x run.sh
+- Build Docker image
+```
+docker build . --tag capstone-backend
+```
 
 ---
 
 **Running the backend**
 
-1. run the docker application in the backround:
-
-2. Type this command to run program
-   - ./run.sh
-
+- Start the backend and database containers
+```
+docker compose up
+```
 ---
 
 Common Docker Commands
