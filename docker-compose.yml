@@ -1,15 +1,13 @@
-# docker-compose.yml
 services:
   db:
     image: postgres:15
-    container_name: capstone_db
     restart: always
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-dbuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dbpassword}
       POSTGRES_DB: ${POSTGRES_DB:-capstone_db}
     ports:
-      - "5433:5432"
+      - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./init.sql:/docker-entrypoint-initdb.d/init.sql
@@ -18,6 +16,18 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
+
+  backend:
+    image: capstone-backend:latest
+    restart: always
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-dbuser}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dbpassword}
+      POSTGRES_DB: ${POSTGRES_DB:-capstone_db}
+      POSTGRES_HOST: db
+      POSTGRES_PORT: 5432
+    ports:
+      - "8080:8080"
 
 volumes:
   postgres_data:
