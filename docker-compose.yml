@@ -20,6 +20,9 @@ services:
   backend:
     image: capstone-backend:latest
     restart: always
+    build:
+      context: .
+      dockerfile: Dockerfile
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-dbuser}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dbpassword}
